@@ -123,7 +123,7 @@ export default {
 		if (url.pathname.startsWith('/api/reading')) {
 			if (request.body) {
 				const data = await request.json();
-				console.log('spreadSpread: ' + data);
+				console.log('spread: ' + data);
 				const cardSpread = data.cards.map((c) => `${c.position}: ${c.name}`).join(', ');
 
 				const astrologyContext = getAstrologyContext();
