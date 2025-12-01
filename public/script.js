@@ -55,19 +55,19 @@ function getCardImage(cardName) {
 		'The Hierophant': '05-TheHierophant.png',
 		'The Lovers': '06-TheLovers.png',
 		'The Chariot': '07-TheChariot.png',
-		'Strength': '08-Strength.png',
+		Strength: '08-Strength.png',
 		'The Hermit': '09-TheHermit.png',
 		'Wheel of Fortune': '10-WheelOfFortune.png',
-		'Justice': '11-Justice.png',
+		Justice: '11-Justice.png',
 		'The Hanged Man': '12-TheHangedMan.png',
-		'Death': '13-Death.png',
-		'Temperance': '14-Temperance.png',
+		Death: '13-Death.png',
+		Temperance: '14-Temperance.png',
 		'The Devil': '15-TheDevil.png',
 		'The Tower': '16-TheTower.png',
 		'The Star': '17-TheStar.png',
 		'The Moon': '18-TheMoon.png',
 		'The Sun': '19-TheSun.png',
-		'Judgement': '20-Judgement.png',
+		Judgement: '20-Judgement.png',
 		'The World': '21-TheWorld.png',
 	};
 
@@ -84,20 +84,20 @@ function getCardImage(cardName) {
 
 		// Map rank to number
 		const rankMap = {
-			'Ace': '01',
-			'2': '02',
-			'3': '03',
-			'4': '04',
-			'5': '05',
-			'6': '06',
-			'7': '07',
-			'8': '08',
-			'9': '09',
-			'10': '10',
-			'Page': '11',
-			'Knight': '12',
-			'Queen': '13',
-			'King': '14',
+			Ace: '01',
+			2: '02',
+			3: '03',
+			4: '04',
+			5: '05',
+			6: '06',
+			7: '07',
+			8: '08',
+			9: '09',
+			10: '10',
+			Page: '11',
+			Knight: '12',
+			Queen: '13',
+			King: '14',
 		};
 
 		const rankNumber = rankMap[rank];
@@ -128,12 +128,6 @@ function displayCards(cards) {
 	});
 }
 
-// Function to draw cards
-function drawCards(selectedCard) {
-	const shuffled = [...deck].sort(() => 0.5 - Math.random());
-	return positions.map((pos, i) => ({ name: shuffled[i], position: pos }));
-}
-
 function pickCard(selection) {
 	const selectedCard = shuffled[selection - 1];
 	console.log(selectedCard);
@@ -149,7 +143,8 @@ function pickCard(selection) {
 		const cardDiv = document.createElement('div');
 
 		const cardImage = getCardImage(selectedCard);
-		cardDiv.className = 'bg-gradient-to-br from-purple-900/40 to-gray-800 p-4 rounded-lg shadow-lg shadow-purple-900/30 text-center flex flex-col items-center gap-3 border border-purple-700/30';
+		cardDiv.className =
+			'bg-gradient-to-br from-purple-900/40 to-gray-800 p-4 rounded-lg shadow-lg shadow-purple-900/30 text-center flex flex-col items-center gap-3 border border-purple-700/30';
 		cardDiv.setAttribute('data-card-name', selectedCard);
 		cardDiv.setAttribute('data-position', positions[positionIndex]);
 		cardDiv.innerHTML = `
@@ -182,6 +177,7 @@ async function getReading(cards) {
 	return data.prediction;
 }
 
+// TODO: Make this more robust, maybe.
 function renderMarkdown(text) {
 	return text
 		.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -253,3 +249,5 @@ document.getElementById('readButton').addEventListener('click', async () => {
 		}
 	}
 });
+
+// TODO: Add a follow-up question option

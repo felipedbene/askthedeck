@@ -40,7 +40,7 @@ function getMoonSign(moonLongitude) {
 function getAstrologyContext() {
 	const now = new Date();
 
-	// Simple moon phase calculation
+	// Simple moon phase calculation because it's a quick approximation;
 	const year = now.getFullYear();
 	const month = now.getMonth() + 1;
 	const day = now.getDate();
