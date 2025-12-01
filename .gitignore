@@ -165,3 +165,6 @@ dist
 .env*
 !.env.example
 .wrangler/
+
+# AI Tools
+CLAUDE.md

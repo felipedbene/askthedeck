@@ -3,156 +3,296 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>LLM Tarot Reader</title>
-		<link rel="stylesheet" href="style.css" />
+		<title>Ask The Deck - Tarot Reading</title>
+		<link rel="icon" type="image/x-icon" href="favicon.ico" />
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script>
+			tailwind.config = {
+				theme: {
+					extend: {
+						colors: {
+							'tarot-dark': '#1a1625',
+							'tarot-purple': '#6b46c1',
+							'tarot-gold': '#d4af37',
+							'cosmic-blue': '#4a5568',
+						}
+					}
+				}
+			}
+		</script>
+		<style>
+			html {
+				scroll-behavior: smooth;
+			}
+		</style>
 	</head>
-	<body>
-		<div class="container">
-			<h1>Tarot Reading</h1>
-			<p>
-				This 3-card spread provides guidance on your personal evolution over the next 7 days. Pick your cards and let the AI read
-				them for you.
+	<body class="bg-gradient-to-b from-tarot-dark to-gray-900 text-gray-100 min-h-screen">
+		<div class="container mx-auto max-w-7xl px-4 py-8">
+			<h1 class="text-4xl font-bold text-center mb-4 bg-gradient-to-r from-tarot-gold to-purple-400 bg-clip-text text-transparent">Ask The Deck</h1>
+			<p class="text-center text-gray-300 mb-2 max-w-2xl mx-auto leading-relaxed">
+				Draw three cards to illuminate your path through the week ahead. Each card reveals a layer of wisdom—where you stand now,
+				what calls for your attention, and the potential waiting to unfold.
 			</p>
-			<p>The cards are shuffled before reading.</p>
+			<p class="text-center text-purple-400 text-sm mb-6 italic">The cards speak through cosmic timing and ancient symbolism</p>
 
-			<button id="clearShuffleButton">Clear & Shuffle</button>
-			<button id="readButton">Read Cards</button>
-			<div id="cardsContainer" class="cards"></div>
-
-			<div id="deckContainer" class="deck">
-				<center>
-
-
-<table class="cards" cellspacing="6" cellpadding="0">
-<tr>
-
-<td align="center" valign="middle"><center><a href="javascript:pickCard(1)"><img title="1" class="card" id="1" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(2)"><img title="2" class="card" id="2" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(3)"><img title="3" class="card" id="3" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(4)"><img title="4" class="card" id="4" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(5)"><img title="5" class="card" id="5" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(6)"><img title="6" class="card" id="6" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(7)"><img title="7" class="card" id="7" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(8)"><img title="8" class="card" id="8" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(9)"><img title="9" class="card" id="9" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(10)"><img title="10" class="card" id="10" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(11)"><img title="11" class="card" id="11" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(12)"><img title="12" class="card" id="12" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(13)"><img title="13" class="card" id="13" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(14)"><img title="14" class="card" id="14" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(15)"><img title="15" class="card" id="15" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(16)"><img title="16" class="card" id="16" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(17)"><img title="17" class="card" id="17" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(18)"><img title="18" class="card" id="18" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(19)"><img title="19" class="card" id="19" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(20)"><img title="20" class="card" id="20" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(21)"><img title="21" class="card" id="21" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(22)"><img title="22" class="card" id="22" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(23)"><img title="23" class="card" id="23" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(24)"><img title="24" class="card" id="24" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(19)"><img title="19" class="card" id="19" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(20)"><img title="20" class="card" id="20" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(21)"><img title="21" class="card" id="21" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(22)"><img title="22" class="card" id="22" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(23)"><img title="23" class="card" id="23" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(24)"><img title="24" class="card" id="24" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(25)"><img title="25" class="card" id="25" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(26)"><img title="26" class="card" id="26" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(27)"><img title="27" class="card" id="27" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(28)"><img title="28" class="card" id="28" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(29)"><img title="29" class="card" id="29" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(30)"><img title="30" class="card" id="30" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(31)"><img title="31" class="card" id="31" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(32)"><img title="32" class="card" id="32" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(33)"><img title="33" class="card" id="33" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(34)"><img title="34" class="card" id="34" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(35)"><img title="35" class="card" id="35" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(36)"><img title="36" class="card" id="36" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(31)"><img title="31" class="card" id="31" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(32)"><img title="32" class="card" id="32" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(33)"><img title="33" class="card" id="33" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(34)"><img title="34" class="card" id="34" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(35)"><img title="35" class="card" id="35" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(36)"><img title="36" class="card" id="36" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(37)"><img title="37" class="card" id="37" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(38)"><img title="38" class="card" id="38" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(39)"><img title="39" class="card" id="39" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(40)"><img title="40" class="card" id="40" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(41)"><img title="41" class="card" id="41" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(42)"><img title="42" class="card" id="42" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(43)"><img title="43" class="card" id="43" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(44)"><img title="44" class="card" id="44" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(45)"><img title="45" class="card" id="45" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(46)"><img title="46" class="card" id="46" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(47)"><img title="47" class="card" id="47" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(48)"><img title="48" class="card" id="48" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(49)"><img title="49" class="card" id="49" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(50)"><img title="50" class="card" id="50" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(51)"><img title="51" class="card" id="51" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(52)"><img title="52" class="card" id="52" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(53)"><img title="53" class="card" id="53" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(54)"><img title="54" class="card" id="54" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(49)"><img title="49" class="card" id="49" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(50)"><img title="50" class="card" id="50" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(51)"><img title="51" class="card" id="51" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(52)"><img title="52" class="card" id="52" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(53)"><img title="53" class="card" id="53" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(54)"><img title="54" class="card" id="54" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(55)"><img title="55" class="card" id="55" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(56)"><img title="56" class="card" id="56" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(57)"><img title="57" class="card" id="57" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(58)"><img title="58" class="card" id="58" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(59)"><img title="59" class="card" id="59" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(60)"><img title="60" class="card" id="60" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(61)"><img title="61" class="card" id="61" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(62)"><img title="62" class="card" id="62" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(63)"><img title="63" class="card" id="63" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(64)"><img title="64" class="card" id="64" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(65)"><img title="65" class="card" id="65" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(66)"><img title="66" class="card" id="66" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(61)"><img title="61" class="card" id="61" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(62)"><img title="62" class="card" id="62" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(63)"><img title="63" class="card" id="63" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(64)"><img title="64" class="card" id="64" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(65)"><img title="65" class="card" id="65" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(66)"><img title="66" class="card" id="66" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(67)"><img title="67" class="card" id="67" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(68)"><img title="68" class="card" id="68" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(69)"><img title="69" class="card" id="69" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(70)"><img title="70" class="card" id="70" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(71)"><img title="71" class="card" id="71" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(72)"><img title="72" class="card" id="72" src="cards/CardBacks.png" /></a></center></td>
-</tr><tr>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(73)"><img title="73" class="card" id="73" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(74)"><img title="74" class="card" id="74" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(75)"><img title="75" class="card" id="75" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(76)"><img title="76" class="card" id="76" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(77)"><img title="77" class="card" id="77" src="cards/CardBacks.png" /></a></center></td>
-<td align="center" valign="middle"><center><a href="javascript:pickCard(78)"><img title="78" class="card" id="78" src="cards/CardBacks.png" /></a></center></td>
-
-</tr>
-
-</table>
+			<div class="flex gap-4 justify-center mb-6 flex-wrap">
+				<button
+					id="clearShuffleButton"
+					class="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/50"
+				>
+					Clear & Shuffle
+				</button>
+				<button
+					id="readButton"
+					class="px-6 py-3 bg-gradient-to-r from-tarot-gold to-yellow-600 text-gray-900 rounded-lg font-semibold hover:from-yellow-500 hover:to-tarot-gold active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-900/50"
+				>
+					Read Cards
+				</button>
 			</div>
-			<div id="readingContainer" class="reading">
-				<div id="spinner" style="display: none">
-					<div class="spinner"></div>
-					Good things come for those who wait.This may take up to 60 seconds.
+
+			<div id="cardsContainer" class="flex gap-4 justify-center flex-wrap mb-6 min-h-[100px] overflow-x-auto"></div>
+
+			<div id="deckContainer" class="grid gap-3 p-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 max-h-[70vh] overflow-y-auto overscroll-contain bg-gradient-to-br from-gray-900 to-purple-900/20 rounded-lg border border-purple-800/30">
+				<button onclick="pickCard(1)" id="card-1" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 1" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(2)" id="card-2" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 2" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(3)" id="card-3" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 3" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(4)" id="card-4" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 4" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(5)" id="card-5" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 5" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(6)" id="card-6" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 6" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(7)" id="card-7" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 7" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(8)" id="card-8" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 8" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(9)" id="card-9" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 9" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(10)" id="card-10" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 10" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(11)" id="card-11" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 11" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(12)" id="card-12" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 12" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(13)" id="card-13" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 13" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(14)" id="card-14" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 14" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(15)" id="card-15" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 15" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(16)" id="card-16" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 16" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(17)" id="card-17" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 17" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(18)" id="card-18" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 18" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(19)" id="card-19" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 19" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(20)" id="card-20" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 20" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(21)" id="card-21" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 21" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(22)" id="card-22" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 22" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(23)" id="card-23" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 23" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(24)" id="card-24" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 24" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(25)" id="card-25" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 25" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(26)" id="card-26" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 26" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(27)" id="card-27" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 27" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(28)" id="card-28" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 28" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(29)" id="card-29" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 29" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(30)" id="card-30" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 30" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(31)" id="card-31" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 31" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(32)" id="card-32" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 32" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(33)" id="card-33" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 33" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(34)" id="card-34" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 34" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(35)" id="card-35" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 35" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(36)" id="card-36" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 36" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(37)" id="card-37" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 37" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(38)" id="card-38" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 38" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(39)" id="card-39" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 39" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(40)" id="card-40" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 40" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(41)" id="card-41" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 41" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(42)" id="card-42" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 42" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(43)" id="card-43" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 43" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(44)" id="card-44" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 44" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(45)" id="card-45" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 45" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(46)" id="card-46" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 46" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(47)" id="card-47" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 47" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(48)" id="card-48" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 48" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(49)" id="card-49" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 49" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(50)" id="card-50" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 50" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(51)" id="card-51" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 51" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(52)" id="card-52" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 52" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(53)" id="card-53" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 53" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(54)" id="card-54" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 54" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(55)" id="card-55" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 55" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(56)" id="card-56" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 56" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(57)" id="card-57" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 57" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(58)" id="card-58" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 58" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(59)" id="card-59" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 59" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(60)" id="card-60" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 60" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(61)" id="card-61" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 61" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(62)" id="card-62" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 62" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(63)" id="card-63" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 63" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(64)" id="card-64" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 64" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(65)" id="card-65" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 65" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(66)" id="card-66" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 66" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(67)" id="card-67" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 67" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(68)" id="card-68" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 68" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(69)" id="card-69" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 69" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(70)" id="card-70" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 70" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(71)" id="card-71" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 71" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(72)" id="card-72" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 72" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(73)" id="card-73" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 73" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(74)" id="card-74" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 74" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(75)" id="card-75" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 75" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(76)" id="card-76" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 76" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(77)" id="card-77" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 77" class="w-full h-full object-cover" />
+				</button>
+				<button onclick="pickCard(78)" id="card-78" class="card-button aspect-[2/3] rounded-lg overflow-hidden transition-all duration-150 active:scale-95 active:brightness-90 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+					<img src="cards/CardBacks.png" alt="Tarot card 78" class="w-full h-full object-cover" />
+				</button>
+			</div>
+
+			<div id="readingContainer" class="mt-6 p-6 bg-gradient-to-br from-purple-900/30 to-gray-900 rounded-lg text-gray-100 border border-purple-700/30">
+				<div id="spinner" style="display: none" class="text-center">
+					<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-300/30 border-t-tarot-gold"></div>
+					<p class="mt-4 text-purple-300">Good things come for those who wait. This may take up to 60 seconds.</p>
 				</div>
 			</div>
 		</div>
