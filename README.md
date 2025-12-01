@@ -12,14 +12,16 @@ A tarot reading app that weaves together card wisdom with real-time astrological
   - Current date and cosmic timing
 - **AI-Powered Interpretations**: DeepSeek AI generates flowing, narrative-style readings that blend card meanings with astrological weather
 - **Full Tarot Deck**: Select from all 78 traditional tarot cards (22 Major Arcana + 56 Minor Arcana)
-- **Interactive Card Selection**: Click cards to pick them, with visual feedback as cards are selected
+- **Visual Card Display**: Selected cards appear with their actual tarot card images, position labels, and card names
+- **Mobile-First Responsive Design**: Optimized for all devices with touch-friendly interactions and responsive grid layout
+- **Mystical UI Theme**: Purple and gold cosmic color scheme with smooth gradients and animations
 - **Shuffle & Reset**: Clear your spread and start fresh anytime
 
 ## Tech Stack
 
-- **Frontend**: Vanilla JavaScript, HTML, CSS
+- **Frontend**: Vanilla JavaScript, HTML, Tailwind CSS
 - **Backend**: Cloudflare Workers
-- **AI**: Deepseek AI
+- **AI**: DeepSeek AI
 - **Deployment**: Cloudflare Pages/Workers
 
 ## Local Development
@@ -38,9 +40,10 @@ wrangler deploy
 
 ## How It Works
 
-1. Select 3 cards by clicking on the card backs
-2. Click "Read Cards" to get your AI-generated reading
-3. Use "Clear & Shuffle" to reset and start over
+1. Select 3 cards by clicking on the card backs in the responsive grid
+2. Watch as your selected cards appear with their images and position labels
+3. Click "Read Cards" to receive your AI-generated interpretation
+4. Use "Clear & Shuffle" to reset and start over with a fresh deck
 
 ## Card Deck
 
