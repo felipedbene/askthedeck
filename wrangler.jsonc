@@ -6,5 +6,15 @@
 	"observability": {
 		"enabled": true,
 	},
-	"assets": { "directory": "./public/", "binding": "ASSETS" },
+	"assets": {
+		"directory": "./public/",
+		"binding": "ASSETS"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "READINGS_KV",
+			"id": "ed027d2465464528a5a3463c9a6f6c9a",
+			"remote": true
+		}
+	]
 }

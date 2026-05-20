@@ -1,3 +1,49 @@
+/**
+ * JOB POLLING ARCHITECTURE
+ *
+ * Problem: Reading generation takes ~60 seconds, causing users to navigate away
+ * Solution: Async job system with immediate response + progress polling
+ *
+ * Flow:
+ * 1. Frontend calls POST /api/reading/start → receives job_id immediately
+ * 2. Backend starts async reading generation (no blocking!)
+ * 3. Frontend polls GET /api/reading/status/:job_id every 2 seconds
+ * 4. Backend updates job state in KV store with progress messages
+ * 5. When complete, frontend retrieves final reading from job state
+ *
+ * Storage: Cloudflare Workers KV (key-value store)
+ * - Key: job_id (e.g., "job_1234567890_abc123")
+ * - Value: JSON object with { status, message, progress, prediction }
+ * - TTL: 1 hour (auto-cleanup)
+ */
+
+/**
+ * Generates a unique job ID for tracking async reading generation
+ * Format: job_<timestamp>_<random_string>
+ * Example: job_1716172800000_a7b3c9d
+ *
+ * @returns {string} Unique job identifier
+ */
+function generateJobId() {
+	return `job_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
+ * Progress messages shown to user while reading generates
+ * These rotate through as the job progresses, keeping users engaged
+ * Each message appears for ~500ms during the generation process
+ */
+const PROGRESS_MESSAGES = [
+	'Shuffling the cosmic deck...',
+	'Consulting the celestial guides...',
+	'Reading the astral currents...',
+	'Channeling ancient wisdom...',
+	'Interpreting the stars alignment...',
+	'Weaving the threads of fate...',
+	'Listening to the whispers of the universe...',
+	'Illuminating the path forward...',
+];
+
 // Helper function to get zodiac sign from ecliptic longitude
 function getZodiacSign(longitude) {
 	const signs = [
@@ -116,19 +162,49 @@ function getAstrologyContext() {
 - **Date:** ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
 }
 
-export default {
-	async fetch(request, env, ctx) {
-		const url = new URL(request.url);
+/**
+ * Generates a tarot reading asynchronously with progress updates
+ *
+ * This function runs in the background (via ctx.waitUntil) without blocking the response.
+ * It updates job status in KV store multiple times so the frontend can show progress.
+ *
+ * Job State Progression:
+ * 1. 'pending' → Initial state (set in /api/reading/start endpoint)
+ * 2. 'processing' → Cycling through progress messages (this function)
+ * 3. 'completed' → Reading generated successfully
+ * 4. 'error' → Something went wrong
+ *
+ * @param {string} jobId - Unique identifier for this reading job
+ * @param {Array} cards - Array of {position: string, name: string} objects
+ * @param {Object} env - Worker environment bindings (READINGS_KV, DEEPSEEK_API_KEY)
+ */
+async function generateReading(jobId, cards, env) {
+	try {
+		// PHASE 1: Show progress messages to keep user engaged
+		// Each message updates the KV store, which frontend polls every 2 seconds
+		for (let i = 0; i < PROGRESS_MESSAGES.length; i++) {
+			await env.READINGS_KV.put(
+				jobId,
+				JSON.stringify({
+					status: 'processing',
+					message: PROGRESS_MESSAGES[i],
+					progress: Math.floor((i / PROGRESS_MESSAGES.length) * 100),
+				}),
+				{ expirationTtl: 3600 } // Expire after 1 hour (auto-cleanup old jobs)
+			);
 
-		if (url.pathname.startsWith('/api/reading')) {
-			if (request.body) {
-				const data = await request.json();
-				console.log('spread: ' + data);
-				const cardSpread = data.cards.map((c) => `${c.position}: ${c.name}`).join(', ');
+			// Small delay between progress updates for pacing
+			// This makes the UI feel responsive rather than instant
+			if (i < PROGRESS_MESSAGES.length - 1) {
+				await new Promise(resolve => setTimeout(resolve, 500));
+			}
+		}
 
-				const astrologyContext = getAstrologyContext();
+		// PHASE 2: Prepare the reading request
+		const cardSpread = cards.map((c) => `${c.position}: ${c.name}`).join(', ');
+		const astrologyContext = getAstrologyContext();
 
-				const prompt = `Act as an intuitive, esoteric guide blending Tarot wisdom with astrological insights. You are a wise seer who speaks in a flowing, narrative style that connects cosmic patterns to personal transformation.
+		const prompt = `Act as an intuitive, esoteric guide blending Tarot wisdom with astrological insights. You are a wise seer who speaks in a flowing, narrative style that connects cosmic patterns to personal transformation.
 **READING STYLE GUIDELINES:**
 1. **Cosmic Weaving:** Blend the card meanings with the current astrological weather. How does the moon phase color the energy? What does the zodiac season emphasize?
 2. **Intuitive Narrative:** Create a flowing story, not a report. Use phrases like "The cards speak through the [Moon Phase] moon's energy..." or "In this [Zodiac] season, I see..."
@@ -139,27 +215,123 @@ export default {
 ** Contextual Framework:** ${astrologyContext}
 Begin the interpretation now.`;
 
-				console.log(prompt);
+		console.log(prompt);
 
-				//
-				// DeepSeek Call here
-				let response = await fetch('https://api.deepseek.com/chat/completions', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
-					},
-					body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], max_tokens: 2000 }),
-				});
+		// PHASE 3: Call DeepSeek API (this is the slow part - takes ~30-60 seconds)
+		let response = await fetch('https://api.deepseek.com/chat/completions', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
+			},
+			body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], max_tokens: 2000 }),
+		});
 
-				if (!response.ok) {
-					throw new Error('API request failed: ' + response.status);
-				}
-				const predictionData = await response.json();
-				let resp = { status: 200, statusText: 'OK', prediction: predictionData.choices[0].message.content };
-				return new Response(JSON.stringify(resp), { status: resp.status, statusText: resp.statusText });
-			}
+		if (!response.ok) {
+			throw new Error('API request failed: ' + response.status);
 		}
+
+		const predictionData = await response.json();
+		const prediction = predictionData.choices[0].message.content;
+
+		// PHASE 4: Store the completed reading in KV
+		// Frontend polling will detect status='completed' and display the prediction
+		await env.READINGS_KV.put(
+			jobId,
+			JSON.stringify({
+				status: 'completed',
+				message: 'Your reading is ready',
+				prediction: prediction,
+			}),
+			{ expirationTtl: 3600 }
+		);
+	} catch (error) {
+		console.error('Error generating reading:', error);
+		// If anything fails, store error state so frontend can show error message
+		await env.READINGS_KV.put(
+			jobId,
+			JSON.stringify({
+				status: 'error',
+				message: 'Error generating reading: ' + error.message,
+			}),
+			{ expirationTtl: 3600 }
+		);
+	}
+}
+
+export default {
+	async fetch(request, env, ctx) {
+		const url = new URL(request.url);
+
+		/**
+		 * ENDPOINT 1: POST /api/reading/start
+		 *
+		 * Initiates an async reading job and returns immediately with job_id
+		 * This prevents blocking the user for 60 seconds!
+		 *
+		 * Request body: { cards: [{position: string, name: string}, ...] }
+		 * Response: { jobId: string }
+		 *
+		 * Key concept: ctx.waitUntil() tells Workers to keep running generateReading()
+		 * in the background even after this response is sent to the client
+		 */
+		if (url.pathname === '/api/reading/start' && request.method === 'POST') {
+			const data = await request.json();
+			const jobId = generateJobId();
+
+			// Store initial job state in KV so frontend can start polling
+			await env.READINGS_KV.put(
+				jobId,
+				JSON.stringify({
+					status: 'pending',
+					message: 'Preparing your reading...',
+					progress: 0,
+				}),
+				{ expirationTtl: 3600 }
+			);
+
+			// Start async reading generation (runs in background, doesn't block response)
+			// ctx.waitUntil() is the magic that makes this non-blocking!
+			ctx.waitUntil(generateReading(jobId, data.cards, env));
+
+			// Return immediately with jobId - frontend can now start polling
+			return new Response(JSON.stringify({ jobId }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
+		/**
+		 * ENDPOINT 2: GET /api/reading/status/:jobId
+		 *
+		 * Checks the current status of a reading job
+		 * Frontend calls this every 2 seconds until status is 'completed' or 'error'
+		 *
+		 * Response states:
+		 * - { status: 'pending', message: '...', progress: 0 }
+		 * - { status: 'processing', message: '...', progress: 25-100 }
+		 * - { status: 'completed', message: '...', prediction: '...' }
+		 * - { status: 'error', message: 'Error details...' }
+		 */
+		if (url.pathname.startsWith('/api/reading/status/')) {
+			const jobId = url.pathname.split('/').pop();
+			const jobData = await env.READINGS_KV.get(jobId);
+
+			if (!jobData) {
+				return new Response(JSON.stringify({ error: 'Job not found' }), {
+					status: 404,
+					headers: { 'Content-Type': 'application/json' },
+				});
+			}
+
+			// Return current job state (already in JSON format from KV)
+			return new Response(jobData, {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
+		// Serve static files (HTML, CSS, JS, images)
 		return env.ASSETS.fetch(request);
 	},
 };

@@ -159,8 +159,29 @@ function pickCard(selection) {
 	}
 }
 
-async function getReading(cards) {
-	const response = await fetch('/api/reading', {
+/**
+ * FRONTEND POLLING SYSTEM
+ *
+ * This replaces the old synchronous flow where we called the API and waited 60 seconds
+ * New flow:
+ * 1. startReading() - Get job_id immediately (no waiting!)
+ * 2. pollReadingStatus() - Check status every 2 seconds, update UI with progress messages
+ * 3. When status='completed', display the reading
+ *
+ * Benefits:
+ * - User sees immediate feedback (not a frozen page)
+ * - Progress messages keep them engaged
+ * - If they navigate away and come back, job is still running (could be enhanced)
+ */
+
+/**
+ * Initiates a new reading job on the backend
+ *
+ * @param {Array} cards - Array of {position: string, name: string} objects
+ * @returns {Promise<string>} The unique job_id to track this reading
+ */
+async function startReading(cards) {
+	const response = await fetch('/api/reading/start', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -169,12 +190,81 @@ async function getReading(cards) {
 	});
 
 	if (!response.ok) {
-		throw new Error('API request failed: ' + response.status);
+		throw new Error('Failed to start reading: ' + response.status);
 	}
 
 	const data = await response.json();
-	console.log(data);
-	return data.prediction;
+	return data.jobId; // Returns immediately - no waiting for AI!
+}
+
+/**
+ * Polls the backend for reading status updates
+ *
+ * This function repeatedly checks the job status every 2 seconds until:
+ * - Status is 'completed' → Returns the reading text
+ * - Status is 'error' → Throws an error
+ * - Timeout reached (2 minutes) → Throws timeout error
+ *
+ * @param {string} jobId - The job identifier from startReading()
+ * @param {Function} onProgress - Callback function called on each update: (message, progress) => void
+ * @returns {Promise<string>} The completed reading text
+ */
+async function pollReadingStatus(jobId, onProgress) {
+	const pollInterval = 2000; // Check status every 2 seconds
+	const maxAttempts = 60; // Give up after 2 minutes (60 × 2 seconds = 120s)
+	let attempts = 0;
+
+	return new Promise((resolve, reject) => {
+		/**
+		 * Recursive polling function
+		 * Each call checks the job status, then either:
+		 * - Resolves/rejects if done
+		 * - Schedules itself to run again via setTimeout
+		 */
+		const poll = async () => {
+			try {
+				attempts++;
+
+				// Fetch current job status from backend
+				const response = await fetch(`/api/reading/status/${jobId}`);
+
+				if (!response.ok) {
+					throw new Error('Failed to check reading status');
+				}
+
+				const data = await response.json();
+
+				// Update UI with current progress message
+				// onProgress callback updates the spinner text
+				if (onProgress && data.message) {
+					onProgress(data.message, data.progress || 0);
+				}
+
+				// Check if we're done (success, error, or timeout)
+				if (data.status === 'completed') {
+					// Success! Return the reading text
+					resolve(data.prediction);
+					return;
+				} else if (data.status === 'error') {
+					// Backend encountered an error
+					reject(new Error(data.message || 'Error generating reading'));
+					return;
+				} else if (attempts >= maxAttempts) {
+					// Took too long - give up
+					reject(new Error('Reading generation timed out. Please try again.'));
+					return;
+				}
+
+				// Still processing - check again in 2 seconds
+				setTimeout(poll, pollInterval);
+			} catch (error) {
+				reject(error);
+			}
+		};
+
+		// Start the polling loop
+		poll();
+	});
 }
 
 // TODO: Make this more robust, maybe.
@@ -220,12 +310,43 @@ document.getElementById('clearShuffleButton').addEventListener('click', async ()
 	}
 });
 
+/**
+ * "Read Cards" button click handler
+ *
+ * COMPLETE FLOW EXPLANATION:
+ * ==========================
+ *
+ * Old way (synchronous, blocking):
+ * 1. User clicks "Read Cards"
+ * 2. Frontend calls API and waits... [60 seconds of nothing]
+ * 3. Reading appears (if user didn't navigate away!)
+ *
+ * New way (async job polling):
+ * 1. User clicks "Read Cards"
+ * 2. Frontend → POST /api/reading/start → gets job_id (instant!)
+ * 3. Backend starts generating reading in background (ctx.waitUntil)
+ * 4. Frontend polls GET /api/reading/status/:jobId every 2 seconds
+ * 5. Each poll updates the UI with progress messages:
+ *    - "Shuffling the cosmic deck..."
+ *    - "Consulting the celestial guides..."
+ *    - etc.
+ * 6. When backend finishes, status → 'completed'
+ * 7. Frontend displays the reading
+ *
+ * User Experience:
+ * - Sees immediate activity (not a frozen page)
+ * - Progress messages keep them engaged
+ * - No more navigating away during generation!
+ */
 document.getElementById('readButton').addEventListener('click', async () => {
 	const cardsContainer = document.getElementById('cardsContainer');
 	if (cardsContainer.childElementCount === 3) {
 		try {
+			// Disable buttons during reading generation
 			readButton.disabled = true;
 			clearShuffleButton.disabled = true;
+
+			// Extract card data from selected cards
 			const cards = Array.from(cardsContainer.children);
 			const cardsData = cards.map((card) => {
 				return {
@@ -234,17 +355,33 @@ document.getElementById('readButton').addEventListener('click', async () => {
 				};
 			});
 			console.log(cardsData);
+
 			const readingContainer = document.getElementById('readingContainer');
-			document.getElementById('spinner').style.display = 'block';
+			const spinner = document.getElementById('spinner');
+			const progressMessage = spinner.querySelector('p');
+
+			// Show spinner and hide the deck
+			spinner.style.display = 'block';
 			document.getElementById('deckContainer').style.display = 'none';
-			const reading = await getReading(cardsData);
-			document.getElementById('spinner').style.display = 'none';
+
+			// STEP 1: Start the reading job (returns immediately with job_id)
+			const jobId = await startReading(cardsData);
+
+			// STEP 2: Poll for status updates and show progress messages
+			// The onProgress callback updates the spinner text in real-time
+			const reading = await pollReadingStatus(jobId, (message, progress) => {
+				progressMessage.textContent = message;
+			});
+
+			// STEP 3: Reading complete! Hide spinner and display result
+			spinner.style.display = 'none';
 			readingContainer.innerHTML = renderMarkdown(reading);
 		} catch (error) {
 			console.error(error);
 			document.getElementById('spinner').style.display = 'none';
 			document.getElementById('readingContainer').textContent = 'Error getting reading: ' + error.message;
 		} finally {
+			// Re-enable clear button so user can start over
 			clearShuffleButton.disabled = false;
 		}
 	}
