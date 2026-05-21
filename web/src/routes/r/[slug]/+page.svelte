@@ -98,11 +98,11 @@
 
 	.page-title {
 		display: inline-block;
-		font-family: 'Cinzel', serif;
-		font-weight: 600;
+		font-family: 'Cormorant Garamond', serif;
+		font-weight: 500;
 		font-size: clamp(2rem, 4.5vw, 2.75rem);
-		letter-spacing: 0.08em;
-		color: var(--gold-bright);
+		letter-spacing: 0.02em;
+		color: var(--cream);
 		text-decoration: none;
 		line-height: 1.1;
 	}

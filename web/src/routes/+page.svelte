@@ -90,11 +90,11 @@
 	}
 
 	.page-title {
-		font-family: 'Cinzel', serif;
-		font-weight: 600;
+		font-family: 'Cormorant Garamond', serif;
+		font-weight: 500;
 		font-size: clamp(2.5rem, 6vw, 4rem);
-		letter-spacing: 0.08em;
-		color: var(--gold-bright);
+		letter-spacing: 0.02em;
+		color: var(--cream);
 		margin: 0;
 		line-height: 1.1;
 	}
