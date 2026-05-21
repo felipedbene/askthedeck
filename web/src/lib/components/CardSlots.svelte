@@ -95,7 +95,7 @@
 		width: 100%;
 		aspect-ratio: 1 / 1.6;
 		border-radius: 0.5rem;
-		border: 2px dashed rgba(212, 175, 55, 0.3);
+		border: 2px dashed rgba(212, 168, 90, 0.3);
 		background-color: rgba(42, 34, 53, 0.3);
 		overflow: hidden;
 		transition: border-color 200ms ease, background-color 200ms ease;
@@ -104,11 +104,11 @@
 
 	.slot-frame.is-filled {
 		border-style: solid;
-		border-color: rgba(212, 175, 55, 0.55);
+		border-color: rgba(212, 168, 90, 0.55);
 		background-color: #2a2235;
 		box-shadow:
 			0 4px 12px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(212, 175, 55, 0.15) inset;
+			0 0 0 1px rgba(212, 168, 90, 0.15) inset;
 	}
 
 	.flipper {

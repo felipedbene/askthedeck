@@ -51,52 +51,47 @@
 	const currentLocaleInfo = $derived(LOCALES[currentLocale]);
 </script>
 
-<div class="locale-switcher relative">
+<div class="locale-switcher">
 	<button
 		type="button"
+		class="pill"
 		onclick={toggleDropdown}
-		class="flex items-center gap-2 px-4 py-2 bg-purple-900/30 hover:bg-purple-900/50 rounded-lg border border-purple-700/30 transition-colors"
 		aria-label={m.locale_switcher_label()}
 		aria-expanded={isOpen}
 	>
-		<span class="text-xl" role="img" aria-label={currentLocaleInfo.label}>
+		<span class="flag" role="img" aria-label={currentLocaleInfo.label}>
 			{currentLocaleInfo.flag}
 		</span>
-		<span class="text-sm font-medium text-purple-200">
-			{currentLocaleInfo.label}
-		</span>
+		<span class="label">{currentLocaleInfo.label}</span>
 		<svg
-			class="w-4 h-4 text-purple-300 transition-transform {isOpen ? 'rotate-180' : ''}"
+			class="chevron"
+			class:open={isOpen}
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
+			aria-hidden="true"
 		>
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 		</svg>
 	</button>
 
 	{#if isOpen}
-		<div
-			class="absolute right-0 mt-2 w-48 bg-gray-900 border border-purple-700/30 rounded-lg shadow-lg z-50"
-		>
+		<div class="dropdown" role="menu">
 			{#each Object.entries(LOCALES) as [code, locale]}
 				<button
 					type="button"
+					class="item"
+					class:active={code === currentLocale}
 					onclick={() => handleLocaleChange(code as AvailableLanguageTag)}
-					class="w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-900/30 transition-colors first:rounded-t-lg last:rounded-b-lg {code === currentLocale ? 'bg-purple-900/20' : ''}"
+					role="menuitemradio"
+					aria-checked={code === currentLocale}
 				>
-					<span class="text-xl" role="img" aria-label={locale.label}>
+					<span class="flag" role="img" aria-label={locale.label}>
 						{locale.flag}
 					</span>
-					<span class="text-sm font-medium text-purple-200">
-						{locale.label}
-					</span>
+					<span class="label">{locale.label}</span>
 					{#if code === currentLocale}
-						<svg
-							class="w-4 h-4 ml-auto text-tarot-gold"
-							fill="currentColor"
-							viewBox="0 0 20 20"
-						>
+						<svg class="check" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
 							<path
 								fill-rule="evenodd"
 								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -109,3 +104,115 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	.locale-switcher {
+		position: relative;
+		font-family: 'Inter', system-ui, sans-serif;
+	}
+
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.4rem 0.9rem;
+		background: rgba(122, 92, 199, 0.08);
+		border: 1px solid rgba(212, 168, 90, 0.2);
+		border-radius: 999px;
+		color: var(--text-soft);
+		font-size: 0.85rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition:
+			border-color 0.3s ease,
+			color 0.3s ease,
+			background 0.3s ease;
+	}
+
+	.pill:hover,
+	.pill:focus-visible {
+		border-color: rgba(212, 168, 90, 0.4);
+		color: var(--cream);
+		outline: none;
+	}
+
+	.flag {
+		font-size: 1.05rem;
+		line-height: 1;
+	}
+
+	.chevron {
+		width: 0.9rem;
+		height: 0.9rem;
+		opacity: 0.8;
+		transition: transform 0.3s ease;
+	}
+
+	.chevron.open {
+		transform: rotate(180deg);
+	}
+
+	.dropdown {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 0.4rem);
+		min-width: 11rem;
+		background: linear-gradient(
+			180deg,
+			rgba(20, 9, 42, 0.95) 0%,
+			rgba(26, 15, 51, 0.95) 100%
+		);
+		border: 1px solid rgba(212, 168, 90, 0.25);
+		border-radius: 8px;
+		box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+		overflow: hidden;
+		z-index: 50;
+	}
+
+	.item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		padding: 0.6rem 0.9rem;
+		background: transparent;
+		border: none;
+		color: var(--text-soft);
+		font-size: 0.9rem;
+		font-weight: 500;
+		text-align: left;
+		cursor: pointer;
+		transition: background 0.2s ease, color 0.2s ease;
+	}
+
+	.item:hover,
+	.item:focus-visible {
+		background: rgba(212, 168, 90, 0.08);
+		color: var(--cream);
+		outline: none;
+	}
+
+	.item.active {
+		background: rgba(212, 168, 90, 0.05);
+		color: var(--cream);
+	}
+
+	.check {
+		width: 0.9rem;
+		height: 0.9rem;
+		margin-left: auto;
+		color: var(--gold);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pill,
+		.chevron,
+		.item {
+			transition: none;
+		}
+		.chevron.open {
+			/* Still indicate open state, just without animating to it. */
+			transform: rotate(180deg);
+		}
+	}
+</style>

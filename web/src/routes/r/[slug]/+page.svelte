@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { renderMarkdown } from '$lib/markdown.js';
 	import {
 		cardImageUrl,
 		cardIdFromDisplayName,
@@ -11,6 +10,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { trackEvent } from '$lib/api/events.js';
 	import TarotCard from '$lib/components/TarotCard.svelte';
+	import ReadingPanel from '$lib/components/ReadingPanel.svelte';
 	import type { PageData } from './$types.js';
 
 	const REVEAL_DELAYS = [0.1, 0.25, 0.4];
@@ -20,8 +20,6 @@
 	}
 
 	let { data }: { data: PageData } = $props();
-
-	const html = $derived(renderMarkdown(data.reading.prediction));
 
 	function localizedPosition(label: string | undefined): string {
 		if (!label) return '';
@@ -44,15 +42,11 @@
 	<meta name="twitter:image" content={data.og.image} />
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl px-4 py-10">
-	<header class="mb-6 text-center">
-		<a
-			href="/"
-			class="text-3xl font-bold bg-gradient-to-r from-tarot-gold to-purple-400 bg-clip-text text-transparent inline-block"
-		>
-			Ask The Deck
-		</a>
-		<p class="text-sm text-purple-300/80 mt-2 italic">A reading, shared.</p>
+<div class="container mx-auto max-w-3xl px-4 py-10">
+	<header class="page-header">
+		<a href="/" class="page-title">Ask The Deck</a>
+		<div class="title-rule" aria-hidden="true"></div>
+		<p class="subtitle">A reading, shared.</p>
 	</header>
 
 	{#if data.reading.cards.length > 0}
@@ -83,10 +77,8 @@
 		</div>
 	{/if}
 
-	<article class="prediction">
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html html}
-	</article>
+	<div class="ornament" aria-hidden="true">✦</div>
+	<ReadingPanel prediction={data.reading.prediction} />
 
 	<p class="closer">
 		{m.reading_closer_text()}
@@ -99,6 +91,39 @@
 </div>
 
 <style>
+	.page-header {
+		text-align: center;
+		margin-bottom: 1.5rem;
+	}
+
+	.page-title {
+		display: inline-block;
+		font-family: 'Cinzel', serif;
+		font-weight: 600;
+		font-size: clamp(2rem, 4.5vw, 2.75rem);
+		letter-spacing: 0.08em;
+		color: var(--gold-bright);
+		text-decoration: none;
+		line-height: 1.1;
+	}
+
+	.title-rule {
+		width: 80px;
+		height: 1px;
+		margin: 0.75rem auto 0.5rem;
+		background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+	}
+
+	.subtitle {
+		font-family: 'Cormorant Garamond', serif;
+		font-style: italic;
+		font-weight: 400;
+		font-size: 1rem;
+		color: var(--gold);
+		letter-spacing: 0.02em;
+		margin-top: 0.5rem;
+	}
+
 	.strip {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
@@ -119,38 +144,13 @@
 		color: var(--cream);
 	}
 
-	.prediction {
-		padding: 1.75rem 1.5rem;
-		background: linear-gradient(180deg, rgba(107, 70, 193, 0.12), rgba(26, 22, 37, 0.6));
-		border: 1px solid rgba(212, 175, 55, 0.25);
-		border-radius: 0.75rem;
-		color: rgb(229 231 235);
-		line-height: 1.7;
-	}
-
-	.prediction :global(h1),
-	.prediction :global(h2),
-	.prediction :global(h3),
-	.prediction :global(h4) {
-		color: #d4af37;
-		font-weight: 600;
-		margin: 1.25em 0 0.5em;
-		line-height: 1.3;
-	}
-
-	.prediction :global(h1) { font-size: 1.5rem; }
-	.prediction :global(h2) { font-size: 1.25rem; }
-	.prediction :global(h3) { font-size: 1.1rem; }
-	.prediction :global(h4) { font-size: 1rem; }
-
-	.prediction :global(strong) {
-		color: rgb(216 180 254);
-		font-weight: 600;
-	}
-
-	.prediction :global(em) {
-		color: rgb(196 181 253);
-		font-style: italic;
+	.ornament {
+		text-align: center;
+		font-size: 1.5rem;
+		color: var(--gold);
+		margin: 1rem 0 0.5rem;
+		line-height: 1;
+		user-select: none;
 	}
 
 	.closer {
@@ -169,7 +169,7 @@
 
 	.closer a:hover,
 	.closer a:focus-visible {
-		color: #d4af37;
+		color: var(--gold);
 		outline: none;
 	}
 </style>

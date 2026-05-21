@@ -120,7 +120,7 @@
 		padding: 0.5rem 0.75rem;
 		font-size: 0.85rem;
 		background: rgba(26, 22, 37, 0.8);
-		border: 1px solid rgba(212, 175, 55, 0.3);
+		border: 1px solid rgba(212, 168, 90, 0.3);
 		border-radius: 0.5rem;
 		color: rgb(229 231 235);
 	}
@@ -133,7 +133,7 @@
 		color: #f5f3ff;
 		font-weight: 600;
 		font-size: 0.9rem;
-		border: 1px solid rgba(212, 175, 55, 0.35);
+		border: 1px solid rgba(212, 168, 90, 0.35);
 		cursor: pointer;
 		transition: transform 120ms ease;
 	}
@@ -154,7 +154,7 @@
 		background: transparent;
 		color: rgb(196 181 253);
 		font-size: 0.8rem;
-		border: 1px solid rgba(212, 175, 55, 0.25);
+		border: 1px solid rgba(212, 168, 90, 0.25);
 		cursor: pointer;
 	}
 

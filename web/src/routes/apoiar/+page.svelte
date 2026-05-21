@@ -16,12 +16,9 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-10">
-	<header class="mb-6">
-		<h1
-			class="text-3xl font-bold bg-gradient-to-r from-tarot-gold to-purple-400 bg-clip-text text-transparent"
-		>
-			{m.apoiar_heading()}
-		</h1>
+	<header class="page-header">
+		<h1 class="page-title">{m.apoiar_heading()}</h1>
+		<div class="title-rule" aria-hidden="true"></div>
 	</header>
 
 	<article class="panel">
@@ -78,20 +75,45 @@
 </div>
 
 <style>
+	.page-header {
+		text-align: center;
+		margin-bottom: 1.5rem;
+	}
+
+	.page-title {
+		font-family: 'Cinzel', serif;
+		font-weight: 600;
+		font-size: clamp(2rem, 4.5vw, 2.75rem);
+		letter-spacing: 0.08em;
+		color: var(--gold-bright);
+		margin: 0;
+		line-height: 1.1;
+	}
+
+	.title-rule {
+		width: 80px;
+		height: 1px;
+		margin: 0.75rem auto 0;
+		background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+	}
+
 	.panel {
 		padding: 1.75rem 1.5rem;
 		background: linear-gradient(180deg, rgba(107, 70, 193, 0.12), rgba(26, 22, 37, 0.6));
-		border: 1px solid rgba(212, 175, 55, 0.25);
+		border: 1px solid rgba(212, 168, 90, 0.25);
 		border-radius: 0.75rem;
-		color: rgb(229 231 235);
+		color: var(--cream);
 		line-height: 1.7;
 	}
 
 	.panel h2 {
-		color: #d4af37;
-		font-weight: 600;
-		font-size: 1.15rem;
-		margin: 1.5em 0 0.5em;
+		font-family: 'Cinzel', serif;
+		color: var(--gold);
+		font-weight: 500;
+		font-size: 1rem;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		margin: 1.75em 0 0.75em;
 		line-height: 1.3;
 	}
 
@@ -126,25 +148,25 @@
 		color: #f5f3ff;
 		font-weight: 600;
 		font-size: 0.95rem;
-		border: 1px solid rgba(212, 175, 55, 0.35);
+		border: 1px solid rgba(212, 168, 90, 0.4);
 		text-decoration: none;
 	}
 
 	.kofi-button:hover,
 	.kofi-button:focus-visible {
 		outline: none;
-		box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5);
+		box-shadow: 0 0 0 2px rgba(212, 168, 90, 0.5);
 	}
 
 	.email {
 		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 		font-size: 0.9rem;
-		color: #d4af37;
+		color: var(--gold);
 		user-select: all;
 	}
 
 	.blog-link {
-		color: #d4af37;
+		color: var(--gold);
 		text-decoration: none;
 		font-weight: 500;
 	}
@@ -168,7 +190,7 @@
 
 	.back-link:hover,
 	.back-link:focus-visible {
-		color: #d4af37;
+		color: var(--gold);
 		outline: none;
 	}
 </style>

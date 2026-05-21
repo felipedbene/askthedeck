@@ -31,14 +31,14 @@
 		min-height: 48px;
 		padding: 0.75rem 1.75rem;
 		border-radius: 9999px;
-		background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+		background: linear-gradient(135deg, #d4a85a 0%, #8a6d3a 100%);
 		color: #1a1625;
 		font-weight: 700;
 		font-size: 1rem;
 		letter-spacing: 0.02em;
-		border: 1px solid rgba(212, 175, 55, 0.8);
+		border: 1px solid rgba(212, 168, 90, 0.8);
 		box-shadow:
-			0 6px 20px rgba(212, 175, 55, 0.25),
+			0 6px 20px rgba(212, 168, 90, 0.25),
 			0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 		cursor: pointer;
 		transition: transform 150ms ease, box-shadow 150ms ease;
@@ -49,7 +49,7 @@
 	.read-btn:hover {
 		transform: translateY(-2px);
 		box-shadow:
-			0 10px 28px rgba(212, 175, 55, 0.35),
+			0 10px 28px rgba(212, 168, 90, 0.35),
 			0 0 0 1px rgba(255, 255, 255, 0.25) inset;
 	}
 

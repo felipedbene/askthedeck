@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { reading } from '$lib/deck/reading.svelte.js';
-	import { renderMarkdown } from '$lib/markdown.js';
 	import {
 		cardDisplayNameLocalized,
 		cardImageUrl,
@@ -11,6 +10,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { trackEvent } from '$lib/api/events.js';
 	import TarotCard from '$lib/components/TarotCard.svelte';
+	import ReadingPanel from '$lib/components/ReadingPanel.svelte';
 
 	const REVEAL_DELAYS = [0.1, 0.25, 0.4];
 
@@ -46,8 +46,6 @@
 		}
 		return reading.message || m.loading_preparing();
 	});
-
-	const html = $derived(reading.prediction ? renderMarkdown(reading.prediction) : '');
 </script>
 
 <div class="reading">
@@ -80,10 +78,8 @@
 			<p>{m.loading_error({ error: reading.error })}</p>
 		</div>
 	{:else if reading.phase === 'success'}
-		<article class="prediction">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html html}
-		</article>
+		<div class="ornament" aria-hidden="true">✦</div>
+		<ReadingPanel prediction={reading.prediction} />
 		<p class="closer">
 			{m.reading_closer_text()}
 			<a href="/apoiar" onclick={handleCloserClick}>{m.reading_closer_link()}</a>
@@ -94,7 +90,7 @@
 <style>
 	.reading {
 		width: 100%;
-		max-width: 36rem;
+		max-width: var(--reading-max-width, 740px);
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
@@ -106,10 +102,22 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: 0.75rem;
 		padding: 0.25rem 0;
+		max-width: 36rem;
+		margin: 0 auto;
+		width: 100%;
 	}
 
 	@media (min-width: 480px) {
 		.strip { gap: 1.25rem; }
+	}
+
+	.ornament {
+		text-align: center;
+		font-size: 1.5rem;
+		color: var(--gold);
+		margin: 1rem 0 -0.25rem;
+		line-height: 1;
+		user-select: none;
 	}
 
 	.loading {
@@ -123,8 +131,8 @@
 	.spinner {
 		width: 2.5rem;
 		height: 2.5rem;
-		border: 3px solid rgba(212, 175, 55, 0.2);
-		border-top-color: #d4af37;
+		border: 3px solid rgba(212, 168, 90, 0.2);
+		border-top-color: var(--gold);
 		border-radius: 50%;
 		animation: spin 900ms linear infinite;
 	}
@@ -139,14 +147,14 @@
 		width: 100%;
 		max-width: 16rem;
 		height: 4px;
-		background: rgba(212, 175, 55, 0.15);
+		background: rgba(212, 168, 90, 0.15);
 		border-radius: 2px;
 		overflow: hidden;
 	}
 
 	.progress-fill {
 		height: 100%;
-		background: linear-gradient(90deg, #6b46c1, #d4af37);
+		background: linear-gradient(90deg, #6b46c1, var(--gold));
 		transition: width 400ms ease;
 	}
 
@@ -157,52 +165,6 @@
 		border-radius: 0.5rem;
 		color: rgb(252 165 165);
 		text-align: center;
-	}
-
-	.prediction {
-		padding: 1.5rem 1.25rem;
-		background: linear-gradient(180deg, rgba(107, 70, 193, 0.12), rgba(26, 22, 37, 0.6));
-		border: 1px solid rgba(212, 175, 55, 0.25);
-		border-radius: 0.75rem;
-		color: rgb(229 231 235);
-		line-height: 1.7;
-	}
-
-	.prediction :global(h1),
-	.prediction :global(h2),
-	.prediction :global(h3),
-	.prediction :global(h4) {
-		color: #d4af37;
-		font-weight: 600;
-		margin: 1.25em 0 0.5em;
-		line-height: 1.3;
-	}
-
-	.prediction :global(h1) { font-size: 1.5rem; }
-	.prediction :global(h2) { font-size: 1.25rem; }
-	.prediction :global(h3) { font-size: 1.1rem; }
-	.prediction :global(h4) { font-size: 1rem; }
-
-	.prediction :global(strong) {
-		color: rgb(216 180 254);
-		font-weight: 600;
-	}
-
-	.prediction :global(em) {
-		color: rgb(196 181 253);
-		font-style: italic;
-	}
-
-	.prediction :global(hr) {
-		border: none;
-		border-top: 1px solid rgba(212, 175, 55, 0.2);
-		margin: 1.5rem 0;
-	}
-
-	.prediction :global(li) {
-		display: list-item;
-		margin-left: 1.5rem;
-		list-style: disc;
 	}
 
 	.closer {
@@ -221,7 +183,7 @@
 
 	.closer a:hover,
 	.closer a:focus-visible {
-		color: #d4af37;
+		color: var(--gold);
 		outline: none;
 	}
 

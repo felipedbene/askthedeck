@@ -25,7 +25,7 @@
 		color: rgb(216 180 254);
 		font-weight: 600;
 		font-size: 0.95rem;
-		border: 1px solid rgba(212, 175, 55, 0.4);
+		border: 1px solid rgba(212, 168, 90, 0.4);
 		cursor: pointer;
 		transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 	}
@@ -33,11 +33,11 @@
 	.new-reading-btn:hover {
 		background: rgba(107, 70, 193, 0.2);
 		color: #f5f3ff;
-		border-color: rgba(212, 175, 55, 0.7);
+		border-color: rgba(212, 168, 90, 0.7);
 	}
 
 	.new-reading-btn:focus-visible {
-		outline: 2px solid #d4af37;
+		outline: 2px solid var(--gold);
 		outline-offset: 2px;
 	}
 </style>

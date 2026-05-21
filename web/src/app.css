@@ -3,11 +3,14 @@
 @tailwind utilities;
 
 /*
- * Design tokens for the card-redesign spread (SCRUM-5). Scoped via
- * naming — these vars are only consumed by TarotCard.svelte. The rest
- * of the UI keeps the older Tailwind tarot-gold (#d4af37); the new
- * gold here is a slightly warmer #d4a85a tuned to seat the Rider-Waite
- * scans on the dark background.
+ * Design tokens for the redesign. Established in SCRUM-5 for the cards,
+ * propagated site-wide in SCRUM-6 (header, intro, reading panel, locale
+ * switcher, support link, all gold-accented surfaces).
+ *
+ * The older Tailwind tarot-gold (#d4af37) is now legacy — kept in
+ * tailwind.config.js for any external consumer but the app uses
+ * --gold (#d4a85a) and --gold-bright (#f0c97a) everywhere new code
+ * lands.
  */
 :root {
 	--bg-deep:       #0a0612;

@@ -54,7 +54,7 @@
 		color: #f5f3ff;
 		font-weight: 600;
 		font-size: 0.95rem;
-		border: 1px solid rgba(212, 175, 55, 0.35);
+		border: 1px solid rgba(212, 168, 90, 0.35);
 		box-shadow:
 			0 4px 12px rgba(0, 0, 0, 0.35),
 			0 0 0 1px rgba(255, 255, 255, 0.05) inset;
@@ -67,7 +67,7 @@
 		transform: translateY(-1px);
 		box-shadow:
 			0 6px 16px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(212, 175, 55, 0.25) inset;
+			0 0 0 1px rgba(212, 168, 90, 0.25) inset;
 	}
 
 	.shuffle-btn:active:not(.is-shuffling) {
@@ -75,7 +75,7 @@
 	}
 
 	.shuffle-btn:focus-visible {
-		outline: 2px solid #d4af37;
+		outline: 2px solid var(--gold);
 		outline-offset: 2px;
 	}
 

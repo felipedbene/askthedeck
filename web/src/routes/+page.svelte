@@ -36,23 +36,16 @@
 </script>
 
 <div class="container mx-auto max-w-7xl px-4 py-8">
-	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-		<h1
-			class="text-4xl font-bold bg-gradient-to-r from-tarot-gold to-purple-400 bg-clip-text text-transparent"
-		>
-			{m.app_title()}
-		</h1>
-
+	<div class="header-row">
+		<h1 class="page-title">{m.app_title()}</h1>
 		<LocaleSwitcher />
 	</div>
+	<div class="title-rule" aria-hidden="true"></div>
 
-	<p class="text-center text-gray-300 mb-2 max-w-2xl mx-auto leading-relaxed">
-		{m.app_tagline()}
-	</p>
-
-	<p class="text-center text-purple-400 text-sm mb-6 italic">
-		{m.cosmic_timing()}
-	</p>
+	<div class="intro">
+		<p class="intro-body">{m.app_tagline()}</p>
+		<p class="intro-subtitle">{m.cosmic_timing()}</p>
+	</div>
 
 	<div class="mt-10 flex flex-col items-center gap-8">
 		{#if !showReading}
@@ -78,3 +71,64 @@
 		{m.privacy_notice()}
 	</p>
 </div>
+
+<style>
+	.header-row {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		text-align: center;
+	}
+
+	@media (min-width: 640px) {
+		.header-row {
+			flex-direction: row;
+			justify-content: space-between;
+			text-align: left;
+		}
+	}
+
+	.page-title {
+		font-family: 'Cinzel', serif;
+		font-weight: 600;
+		font-size: clamp(2.5rem, 6vw, 4rem);
+		letter-spacing: 0.08em;
+		color: var(--gold-bright);
+		margin: 0;
+		line-height: 1.1;
+	}
+
+	.title-rule {
+		width: 80px;
+		height: 1px;
+		margin: 0.75rem auto 1.5rem;
+		background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+	}
+
+	.intro {
+		max-width: 640px;
+		margin: 0 auto 3rem;
+		text-align: center;
+	}
+
+	.intro-body {
+		font-family: 'Inter', system-ui, sans-serif;
+		font-weight: 400;
+		font-size: 1rem;
+		line-height: 1.7;
+		color: var(--text-soft);
+		max-width: 580px;
+		margin: 0 auto;
+	}
+
+	.intro-subtitle {
+		font-family: 'Cormorant Garamond', serif;
+		font-style: italic;
+		font-weight: 400;
+		font-size: 1.1rem;
+		letter-spacing: 0.02em;
+		color: var(--gold);
+		margin: 1rem auto 0;
+	}
+</style>

@@ -76,7 +76,7 @@
 	}
 
 	.is-interactive:focus-visible {
-		outline: 2px solid #d4af37;
+		outline: 2px solid var(--gold);
 		outline-offset: 4px;
 	}
 
@@ -87,7 +87,7 @@
 		background-color: #2a2235;
 		box-shadow:
 			0 4px 12px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(212, 175, 55, 0.15) inset;
+			0 0 0 1px rgba(212, 168, 90, 0.15) inset;
 		will-change: transform;
 		transition: transform 200ms ease;
 	}
@@ -128,7 +128,7 @@
 
 	.card--empty {
 		background-color: transparent;
-		border: 2px dashed rgba(212, 175, 55, 0.25);
+		border: 2px dashed rgba(212, 168, 90, 0.25);
 		box-shadow: none;
 	}
 

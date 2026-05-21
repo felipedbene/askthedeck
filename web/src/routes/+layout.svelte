@@ -35,16 +35,27 @@
 	}
 
 	.nav-link {
+		font-family: 'Inter', system-ui, sans-serif;
 		font-size: 0.85rem;
-		color: rgb(196 181 253);
+		font-weight: 400;
+		color: var(--text-muted);
 		text-decoration: none;
 		padding: 0.25rem 0.5rem;
 		border-radius: 0.25rem;
+		border-bottom: 1px solid transparent;
+		transition: color 0.3s ease, border-color 0.3s ease;
 	}
 
 	.nav-link:hover,
 	.nav-link:focus-visible {
-		color: #d4af37;
+		color: var(--gold);
+		border-bottom-color: var(--gold);
 		outline: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-link {
+			transition: none;
+		}
 	}
 </style>
