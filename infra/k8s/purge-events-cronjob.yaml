@@ -1,0 +1,72 @@
+# askthedeck — daily purge of the events table.
+#
+# Hits POST https://ask.debene.dev/api/admin/purge-events with a bearer token
+# pulled from the askthedeck-purge-secret Secret in the same namespace.
+# Defaults to deleting rows older than 90 days. The endpoint enforces auth
+# and is a no-op for any request with a wrong/missing token.
+#
+# To bootstrap the secret in-cluster (the value lives in your password
+# manager and was set via `wrangler secret put PURGE_SECRET` on the
+# worker side):
+#
+#   kubectl create secret generic askthedeck-purge-secret \
+#     --from-literal=token='REDACTED' \
+#     -n <namespace>
+#
+# Apply this manifest with:  kubectl apply -f infra/k8s/purge-events-cronjob.yaml -n <namespace>
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: askthedeck-purge-events
+  labels:
+    app: askthedeck
+    component: purge-events
+spec:
+  # 03:00 UTC every day.
+  schedule: "0 3 * * *"
+  timeZone: "Etc/UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: curl
+              image: curlimages/curl:8.10.1
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  cpu: "10m"
+                  memory: "16Mi"
+                limits:
+                  cpu: "100m"
+                  memory: "64Mi"
+              env:
+                - name: PURGE_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: askthedeck-purge-secret
+                      key: token
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  HTTP_CODE=$(curl -sS -o /tmp/body -w '%{http_code}' \
+                    --max-time 30 \
+                    -X POST \
+                    -H "Authorization: Bearer ${PURGE_TOKEN}" \
+                    -H "Content-Type: application/json" \
+                    -d '{"olderThanDays":90}' \
+                    https://ask.debene.dev/api/admin/purge-events)
+                  echo "HTTP ${HTTP_CODE}"
+                  cat /tmp/body
+                  echo
+                  test "${HTTP_CODE}" = "200"

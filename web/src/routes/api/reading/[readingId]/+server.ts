@@ -2,6 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 import { getReadingById } from '$lib/server/db.js';
 import { getReaderIdCookie } from '$lib/server/cookies.js';
+import { logEvent } from '$lib/server/events.js';
 
 /**
  * GET /api/reading/:readingId
@@ -14,7 +15,7 @@ import { getReaderIdCookie } from '$lib/server/cookies.js';
  * we return 404 — never 403. We don't want to leak that an id exists
  * but belongs to someone else.
  */
-export const GET: RequestHandler = async ({ params, platform, cookies }) => {
+export const GET: RequestHandler = async ({ params, platform, cookies, request }) => {
 	if (!platform?.env.DB) {
 		throw error(500, 'Reading service is not configured');
 	}
@@ -34,6 +35,17 @@ export const GET: RequestHandler = async ({ params, platform, cookies }) => {
 	} catch {
 		cards = [];
 	}
+
+	const hostname = new URL(request.url).hostname;
+	platform.context.waitUntil(
+		logEvent(platform.env.DB, {
+			event: 'reading_viewed',
+			readerId,
+			locale: row.locale,
+			hostname,
+			metadata: { via_share: false }
+		})
+	);
 
 	return json({
 		id: row.id,

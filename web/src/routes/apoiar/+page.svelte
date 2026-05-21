@@ -1,8 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { trackEvent } from '$lib/api/events.js';
 
 	const KOFI_URL = 'https://ko-fi.com/felipedebene';
 	const CONTACT_EMAIL = 'felipe@debene.dev';
+
+	function handleKofiClick() {
+		trackEvent('kofi_clicked');
+	}
 </script>
 
 <svelte:head>
@@ -30,7 +35,13 @@
 		<p>{m.apoiar_what_dont()}</p>
 
 		<div class="cta">
-			<a href={KOFI_URL} target="_blank" rel="noopener" class="kofi-button">
+			<a
+				href={KOFI_URL}
+				target="_blank"
+				rel="noopener"
+				class="kofi-button"
+				onclick={handleKofiClick}
+			>
 				{m.apoiar_button()}
 			</a>
 		</div>

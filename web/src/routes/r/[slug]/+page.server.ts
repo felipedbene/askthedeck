@@ -1,13 +1,15 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 import { getReadingBySlug } from '$lib/server/db.js';
+import { getReaderIdCookie } from '$lib/server/cookies.js';
+import { logEvent } from '$lib/server/events.js';
 
 interface CardJson {
 	position?: string;
 	name?: string;
 }
 
-export const load: PageServerLoad = async ({ params, platform, url }) => {
+export const load: PageServerLoad = async ({ params, platform, url, cookies }) => {
 	if (!platform?.env.DB) {
 		throw error(500, 'Reading service is not configured');
 	}
@@ -24,6 +26,17 @@ export const load: PageServerLoad = async ({ params, platform, url }) => {
 	} catch {
 		// Treat malformed data as empty rather than 500ing the share page.
 	}
+
+	const readerId = getReaderIdCookie(cookies);
+	platform.context.waitUntil(
+		logEvent(platform.env.DB, {
+			event: 'reading_viewed',
+			readerId,
+			locale: row.locale,
+			hostname: url.hostname,
+			metadata: { via_share: true }
+		})
+	);
 
 	const firstCard = cards[0]?.name?.trim() ?? 'Tarot';
 	const ogTitle = `A Tarot Reading — ${firstCard} & more`;

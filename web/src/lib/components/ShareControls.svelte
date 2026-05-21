@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { trackEvent } from '$lib/api/events.js';
 
 	let { readingId }: { readingId: string | null } = $props();
 
@@ -51,6 +52,7 @@
 		try {
 			await navigator.clipboard.writeText(shareUrl);
 			copied = true;
+			trackEvent('share_link_copied');
 			setTimeout(() => {
 				copied = false;
 			}, 2000);

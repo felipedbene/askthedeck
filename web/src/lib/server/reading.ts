@@ -18,6 +18,7 @@ import type { D1Database, KVNamespace } from '@cloudflare/workers-types';
 import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
 import { buildPriorReadingsContext } from './continuity.js';
 import { getRecentReadingsByOwner, insertReading } from './db.js';
+import { logEvent } from './events.js';
 
 export interface CardSpread {
 	position: string;
@@ -358,7 +359,8 @@ export async function generateReading(
 	kv: KVNamespace,
 	db: D1Database,
 	deepseekApiKey: string,
-	locale: string
+	locale: string,
+	hostname?: string
 ): Promise<void> {
 	const normalizedLocale = locale || 'en';
 	const responseLanguage = LOCALE_NAMES[normalizedLocale] || 'English';
@@ -367,14 +369,17 @@ export async function generateReading(
 
 	const stopFlag = { done: false };
 	const progressTask = runProgressLoop(kv, jobId, stopFlag);
+	let stage: 'astrology' | 'deepseek' | 'd1_write' | 'unknown' = 'unknown';
 
 	try {
+		stage = 'astrology';
 		const { snapshot: astrology, promptBlock: astrologyBlock } = getAstrology(nowDate);
 
 		const cacheKey = await readingCacheKey(cards, normalizedLocale);
 		const cached = await kv.get(cacheKey);
 		if (cached) {
 			console.log(`[cache hit] ${cacheKey}`);
+			stage = 'd1_write';
 			await persistReading(db, {
 				readingId,
 				readerId,
@@ -391,6 +396,12 @@ export async function generateReading(
 				message: 'Your reading is ready',
 				prediction: cached,
 				readingId
+			});
+			await logEvent(db, {
+				event: 'reading_completed',
+				readerId,
+				locale: normalizedLocale,
+				hostname
 			});
 			return;
 		}
@@ -414,6 +425,7 @@ export async function generateReading(
 			priorReadings: priorContext
 		});
 
+		stage = 'deepseek';
 		const response = await fetch('https://api.deepseek.com/chat/completions', {
 			method: 'POST',
 			headers: {
@@ -444,6 +456,7 @@ export async function generateReading(
 
 		await kv.put(cacheKey, prediction, { expirationTtl: CACHE_TTL_SECONDS });
 
+		stage = 'd1_write';
 		await persistReading(db, {
 			readingId,
 			readerId,
@@ -463,6 +476,12 @@ export async function generateReading(
 			prediction,
 			readingId
 		});
+		await logEvent(db, {
+			event: 'reading_completed',
+			readerId,
+			locale: normalizedLocale,
+			hostname
+		});
 	} catch (error) {
 		stopFlag.done = true;
 		await progressTask.catch(() => undefined);
@@ -471,6 +490,13 @@ export async function generateReading(
 		await putJobState(kv, jobId, {
 			status: 'error',
 			message: `Error generating reading: ${message}`
+		});
+		await logEvent(db, {
+			event: 'reading_errored',
+			readerId,
+			locale: normalizedLocale,
+			hostname,
+			metadata: { stage }
 		});
 	}
 }

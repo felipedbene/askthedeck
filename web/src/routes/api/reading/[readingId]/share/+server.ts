@@ -7,6 +7,7 @@ import {
 } from '$lib/server/db.js';
 import { getReaderIdCookie } from '$lib/server/cookies.js';
 import { generateShareSlug } from '$lib/server/ids.js';
+import { logEvent } from '$lib/server/events.js';
 
 interface ShareRequest {
 	action: 'publish' | 'unpublish';
@@ -70,6 +71,14 @@ export const POST: RequestHandler = async ({ params, request, platform, cookies,
 			slug
 		);
 		if (changed) {
+			platform.context.waitUntil(
+				logEvent(platform.env.DB, {
+					event: 'share_published',
+					readerId,
+					locale: row.locale,
+					hostname: url.hostname
+				})
+			);
 			return json({ shareUrl: shareUrlFor(url, slug) });
 		}
 	}

@@ -10,6 +10,7 @@ import { generateReaderId, generateReadingId } from '$lib/server/ids.js';
 import { getReaderIdCookie, setReaderIdCookie } from '$lib/server/cookies.js';
 import { upsertReader } from '$lib/server/db.js';
 import { getDefaultLocale } from '$lib/server/locale.js';
+import { logEvent } from '$lib/server/events.js';
 
 interface StartRequest {
 	cards: CardSpread[];
@@ -64,6 +65,17 @@ export const POST: RequestHandler = async ({ request, platform, cookies }) => {
 	const readingId = generateReadingId();
 	await initJob(READINGS_KV, jobId);
 
+	const url = new URL(request.url);
+	platform.context.waitUntil(
+		logEvent(DB, {
+			event: 'reading_started',
+			readerId,
+			locale,
+			hostname: url.hostname,
+			metadata: { card_count: body.cards.length }
+		})
+	);
+
 	platform.context.waitUntil(
 		generateReading(
 			jobId,
@@ -73,7 +85,8 @@ export const POST: RequestHandler = async ({ request, platform, cookies }) => {
 			READINGS_KV,
 			DB,
 			DEEPSEEK_API_KEY,
-			locale
+			locale,
+			url.hostname
 		)
 	);
 

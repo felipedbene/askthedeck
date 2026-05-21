@@ -27,7 +27,7 @@
 	"share_copied": "Copiado!",
 	"share_unpublish": "Tornar privada",
 	"share_failed": "Não foi possível criar o link. Tente de novo.",
-	"privacy_notice": "Salvamos as leituras para mostrar seu histórico e tecer continuidade. Sem cadastro — usamos um cookie para te lembrar neste dispositivo.",
+	"privacy_notice": "Salvamos as leituras para mostrar seu histórico e tecer continuidade. Sem cadastro — usamos um cookie para te lembrar neste dispositivo. Também registramos eventos anônimos agregados (como 'alguém terminou uma leitura') pra saber se o produto está funcionando. Nunca registramos suas cartas, o texto da leitura, seu IP ou sua identidade.",
 	"nav_support": "Apoiar",
 	"reading_closer_text": "Esta leitura foi gerada gratuitamente.",
 	"reading_closer_link": "Apoie o projeto →",

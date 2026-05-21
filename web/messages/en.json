@@ -27,7 +27,7 @@
 	"share_copied": "Copied!",
 	"share_unpublish": "Make private",
 	"share_failed": "Couldn't create the share link. Try again.",
-	"privacy_notice": "Readings are saved so we can show your history and weave continuity. No account needed — we use a cookie to remember you on this device.",
+	"privacy_notice": "Readings are saved so we can show your history and weave continuity. No account needed — we use a cookie to remember you on this device. We also track anonymous, aggregate events (like 'someone completed a reading') so we can tell if the product is working. We never log your cards, your prediction text, your IP, or your identity.",
 	"nav_support": "Support",
 	"reading_closer_text": "This reading was generated freely.",
 	"reading_closer_link": "Support the project →",

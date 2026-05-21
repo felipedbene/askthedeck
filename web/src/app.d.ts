@@ -19,6 +19,7 @@ declare global {
 				READINGS_KV: KVNamespace;
 				DB: D1Database;
 				DEEPSEEK_API_KEY: string;
+				PURGE_SECRET?: string;
 			};
 			context: ExecutionContext;
 			caches: CacheStorage & { default: Cache };

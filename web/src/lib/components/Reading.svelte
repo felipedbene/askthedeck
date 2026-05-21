@@ -8,6 +8,11 @@
 	} from '$lib/deck/cards.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as m from '$lib/paraglide/messages.js';
+	import { trackEvent } from '$lib/api/events.js';
+
+	function handleCloserClick() {
+		trackEvent('inline_closer_clicked');
+	}
 
 	let { cards = [] }: { cards?: CardId[] } = $props();
 
@@ -77,7 +82,7 @@
 		</article>
 		<p class="closer">
 			{m.reading_closer_text()}
-			<a href="/apoiar">{m.reading_closer_link()}</a>
+			<a href="/apoiar" onclick={handleCloserClick}>{m.reading_closer_link()}</a>
 		</p>
 	{/if}
 </div>
