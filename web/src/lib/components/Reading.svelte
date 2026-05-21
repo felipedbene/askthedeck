@@ -49,6 +49,10 @@
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html html}
 		</article>
+		<p class="closer">
+			{m.reading_closer_text()}
+			<a href="/apoiar">{m.reading_closer_link()}</a>
+		</p>
 	{/if}
 </div>
 
@@ -210,6 +214,26 @@
 		display: list-item;
 		margin-left: 1.5rem;
 		list-style: disc;
+	}
+
+	.closer {
+		margin: 1.5rem 0 0;
+		text-align: center;
+		font-size: 0.78rem;
+		color: rgb(196 181 253 / 0.6);
+		line-height: 1.5;
+	}
+
+	.closer a {
+		color: rgb(216 180 254 / 0.85);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.closer a:hover,
+	.closer a:focus-visible {
+		color: #d4af37;
+		outline: none;
 	}
 
 	@keyframes spin {

@@ -18,5 +18,21 @@
 	"share_copied": "Copiado!",
 	"share_unpublish": "Tornar privada",
 	"share_failed": "Não foi possível criar o link. Tente de novo.",
-	"privacy_notice": "Salvamos as leituras para mostrar seu histórico e tecer continuidade. Sem cadastro — usamos um cookie para te lembrar neste dispositivo."
+	"privacy_notice": "Salvamos as leituras para mostrar seu histórico e tecer continuidade. Sem cadastro — usamos um cookie para te lembrar neste dispositivo.",
+	"nav_support": "Apoiar",
+	"reading_closer_text": "Esta leitura foi gerada gratuitamente.",
+	"reading_closer_link": "Apoie o projeto →",
+	"apoiar_heading": "Apoiar",
+	"apoiar_intro": "Pergunte às Cartas é uma leitura de tarô grátis feita por uma pessoa só. Existe porque eu queria misturar código com algo que escapa do código. Nenhuma leitura é guardada com seu nome, e ninguém paga pra estar aqui.",
+	"apoiar_cost_heading": "O que custa",
+	"apoiar_cost_body": "Cada leitura custa cerca de $0,003 em chamadas de API ao modelo de linguagem por trás disso. Coloquei até agora $20 em créditos no DeepSeek. A hospedagem roda no plano gratuito do Cloudflare — zero, por enquanto. Sou eu que pago.",
+	"apoiar_what_heading": "O que doações fazem — e o que não fazem",
+	"apoiar_what_do": "Cobrem as chamadas de API e, quando o tráfego crescer, a hospedagem que hoje é grátis. Compram tempo pra eu continuar mantendo e melhorando isso aqui.",
+	"apoiar_what_dont": "Não destravam nada. Não tem versão premium. As leituras não ficam mais precisas pra quem doa. Sem fila prioritária, sem baralho exclusivo, sem e-mail de agradecimento ocupando sua caixa de entrada.",
+	"apoiar_button": "Apoiar no Ko-fi →",
+	"apoiar_other_heading": "Outras formas",
+	"apoiar_other_body": "Se doar não é seu lance, compartilhar uma leitura ou mandar um retorno também ajuda.",
+	"apoiar_contact_heading": "Falar comigo",
+	"apoiar_contact_body": "Dúvidas, bugs, ideias — escreva pra:",
+	"apoiar_back": "← Voltar"
 }

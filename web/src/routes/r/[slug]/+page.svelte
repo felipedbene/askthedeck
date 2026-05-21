@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { renderMarkdown } from '$lib/markdown.js';
 	import { cardImageUrl, cardIdFromDisplayName } from '$lib/deck/cards.js';
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
@@ -61,6 +62,11 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html html}
 	</article>
+
+	<p class="closer">
+		{m.reading_closer_text()}
+		<a href="/apoiar">{m.reading_closer_link()}</a>
+	</p>
 
 	<footer class="mt-10 text-center text-sm text-purple-300/60">
 		<a href="/" class="underline hover:text-purple-200">Draw your own three-card spread →</a>
@@ -150,5 +156,25 @@
 	.prediction :global(em) {
 		color: rgb(196 181 253);
 		font-style: italic;
+	}
+
+	.closer {
+		margin: 1.5rem 0 0;
+		text-align: center;
+		font-size: 0.78rem;
+		color: rgb(196 181 253 / 0.6);
+		line-height: 1.5;
+	}
+
+	.closer a {
+		color: rgb(216 180 254 / 0.85);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.closer a:hover,
+	.closer a:focus-visible {
+		color: #d4af37;
+		outline: none;
 	}
 </style>

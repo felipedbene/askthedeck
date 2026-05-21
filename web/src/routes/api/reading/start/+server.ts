@@ -9,6 +9,7 @@ import {
 import { generateReaderId, generateReadingId } from '$lib/server/ids.js';
 import { getReaderIdCookie, setReaderIdCookie } from '$lib/server/cookies.js';
 import { upsertReader } from '$lib/server/db.js';
+import { getDefaultLocale } from '$lib/server/locale.js';
 
 interface StartRequest {
 	cards: CardSpread[];
@@ -35,7 +36,8 @@ export const POST: RequestHandler = async ({ request, platform, cookies }) => {
 		throw error(400, 'Request must include a non-empty `cards` array');
 	}
 
-	const locale = body.locale || 'en';
+	const hostLocale = getDefaultLocale(new URL(request.url).hostname);
+	const locale = body.locale || hostLocale;
 
 	// Identify the reader. Accept a pre-existing cookie value; if no row
 	// exists for it (data wiped, fresh worker, etc.) just upsert under it.

@@ -3,6 +3,11 @@
 	"name": "ask-the-deck-web",
 	"main": "build/_worker.js",
 	"compatibility_date": "2025-11-28",
+	"routes": [
+		{ "pattern": "ask.debene.dev", "custom_domain": true },
+		{ "pattern": "pergunte.debene.dev", "custom_domain": true },
+		{ "pattern": "preguntale.debene.dev", "custom_domain": true }
+	],
 	"observability": {
 		"enabled": true
 	},

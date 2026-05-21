@@ -18,5 +18,21 @@
 	"share_copied": "Copied!",
 	"share_unpublish": "Make private",
 	"share_failed": "Couldn't create the share link. Try again.",
-	"privacy_notice": "Readings are saved so we can show your history and weave continuity. No account needed — we use a cookie to remember you on this device."
+	"privacy_notice": "Readings are saved so we can show your history and weave continuity. No account needed — we use a cookie to remember you on this device.",
+	"nav_support": "Support",
+	"reading_closer_text": "This reading was generated freely.",
+	"reading_closer_link": "Support the project →",
+	"apoiar_heading": "Support",
+	"apoiar_intro": "Ask The Deck is a free tarot reading made by one person. It exists because I wanted to mix code with something that doesn't quite belong to code. No reading is stored under your name, and nobody pays to be here.",
+	"apoiar_cost_heading": "What it costs",
+	"apoiar_cost_body": "Each reading costs about $0.003 in API calls to the language model behind the scenes. I've put $20 into DeepSeek credits so far. Hosting runs on Cloudflare's free tier — zero, for now. I cover all of it.",
+	"apoiar_what_heading": "What donations do — and don't do",
+	"apoiar_what_do": "They cover API calls and, eventually, hosting when traffic outgrows the free tier. They buy me time to keep maintaining and improving this.",
+	"apoiar_what_dont": "They don't unlock anything. There's no premium tier. Readings aren't more accurate for donors. No priority queue, no exclusive deck, no \"thank you\" email worth your inbox.",
+	"apoiar_button": "Support on Ko-fi →",
+	"apoiar_other_heading": "Other ways",
+	"apoiar_other_body": "If donating isn't your thing, sharing a reading or sending feedback also helps.",
+	"apoiar_contact_heading": "Get in touch",
+	"apoiar_contact_body": "Questions, bugs, ideas — write to:",
+	"apoiar_back": "← Back"
 }
