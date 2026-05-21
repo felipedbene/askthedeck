@@ -37,6 +37,37 @@ export function cardImageUrl(id: CardId): string {
 	return `/cards/${id}.png`;
 }
 
+const COURT_RANKS: Record<number, string> = {
+	11: 'Page',
+	12: 'Knight',
+	13: 'Queen',
+	14: 'King'
+};
+
+/**
+ * Convert an internal card id into a human-readable name suitable for
+ * prompt / UI text. Examples:
+ *   "00-TheFool"   -> "The Fool"
+ *   "Cups07"       -> "Seven of Cups"
+ *   "Wands13"      -> "Queen of Wands"
+ */
+export function cardDisplayName(id: CardId): string {
+	const major = id.match(/^\d{2}-(.+)$/);
+	if (major) {
+		return major[1].replace(/([a-z])([A-Z])/g, '$1 $2');
+	}
+	const minor = id.match(/^([A-Za-z]+)(\d+)$/);
+	if (minor) {
+		const suit = minor[1];
+		const n = parseInt(minor[2], 10);
+		const court = COURT_RANKS[n];
+		if (court) return `${court} of ${suit}`;
+		const NUMBERS = ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
+		return `${NUMBERS[n - 1] ?? n} of ${suit}`;
+	}
+	return id;
+}
+
 export function fisherYatesShuffle<T>(items: readonly T[]): T[] {
 	const arr = [...items];
 	for (let i = arr.length - 1; i > 0; i--) {
