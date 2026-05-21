@@ -177,8 +177,16 @@ function getAstrologyContext() {
  * @param {string} jobId - Unique identifier for this reading job
  * @param {Array} cards - Array of {position: string, name: string} objects
  * @param {Object} env - Worker environment bindings (READINGS_KV, DEEPSEEK_API_KEY)
+ * @param {string} [locale] - BCP 47 locale tag (e.g. 'pt-BR'). If provided, the
+ *   reading is requested in this language. Defaults to English.
  */
-async function generateReading(jobId, cards, env) {
+async function generateReading(jobId, cards, env, locale) {
+	const LOCALE_NAMES = {
+		'en': 'English',
+		'pt-BR': 'Brazilian Portuguese',
+		'es-MX': 'Mexican Spanish'
+	};
+	const responseLanguage = LOCALE_NAMES[locale] || 'English';
 	try {
 		// PHASE 1: Show progress messages to keep user engaged
 		// Each message updates the KV store, which frontend polls every 2 seconds
@@ -213,6 +221,9 @@ async function generateReading(jobId, cards, env) {
 
 ** Tarot Card Spread:** ${cardSpread}
 ** Contextual Framework:** ${astrologyContext}
+
+**RESPONSE LANGUAGE:** Write your entire reading in ${responseLanguage}. Preserve the intuitive, esoteric tone in that language.
+
 Begin the interpretation now.`;
 
 		console.log(prompt);
@@ -292,7 +303,7 @@ export default {
 
 			// Start async reading generation (runs in background, doesn't block response)
 			// ctx.waitUntil() is the magic that makes this non-blocking!
-			ctx.waitUntil(generateReading(jobId, data.cards, env));
+			ctx.waitUntil(generateReading(jobId, data.cards, env, data.locale));
 
 			// Return immediately with jobId - frontend can now start polling
 			return new Response(JSON.stringify({ jobId }), {
