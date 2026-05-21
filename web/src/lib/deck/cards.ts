@@ -68,6 +68,23 @@ export function cardDisplayName(id: CardId): string {
 	return id;
 }
 
+/**
+ * Inverse of cardDisplayName — find the canonical CardId for a given
+ * display name. Returns null if the name doesn't match any known card.
+ * Used to recover the image slug for stored readings (cards_json holds
+ * display names, not ids).
+ */
+let _displayNameToId: Map<string, CardId> | null = null;
+export function cardIdFromDisplayName(name: string): CardId | null {
+	if (!_displayNameToId) {
+		_displayNameToId = new Map();
+		for (const id of ALL_CARDS) {
+			_displayNameToId.set(cardDisplayName(id).toLowerCase(), id);
+		}
+	}
+	return _displayNameToId.get(name.trim().toLowerCase()) ?? null;
+}
+
 export function fisherYatesShuffle<T>(items: readonly T[]): T[] {
 	const arr = [...items];
 	for (let i = arr.length - 1; i > 0; i--) {
