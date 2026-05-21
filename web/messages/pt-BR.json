@@ -1,0 +1,15 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_title": "Pergunte às Cartas",
+	"app_tagline": "Tire três cartas para iluminar seu caminho nos próximos 7 dias. Cada carta revela uma camada de sabedoria—onde você está agora, o que precisa da sua atenção, e o potencial esperando para se manifestar.",
+	"cosmic_timing": "As cartas falam através do tempo cósmico e do simbolismo ancestral",
+	"shuffle_button": "Embaralhar",
+	"read_button": "Ler as Cartas",
+	"new_reading_button": "Nova Leitura",
+	"position_current": "Estado Atual",
+	"position_growth": "Foco para Crescimento",
+	"position_potential": "Potencial em 7 Dias",
+	"loading_preparing": "Preparando sua leitura...",
+	"loading_error": "Erro ao obter leitura: {error}",
+	"locale_switcher_label": "Idioma"
+}

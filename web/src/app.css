@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles matching the existing app theme */
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	@apply bg-gradient-to-b from-tarot-dark to-gray-900 text-gray-100 min-h-screen;
+}
