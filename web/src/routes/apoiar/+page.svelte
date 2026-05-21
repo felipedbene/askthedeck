@@ -49,6 +49,22 @@
 		<h2>{m.apoiar_other_heading()}</h2>
 		<p class="muted">{m.apoiar_other_body()}</p>
 
+		<h2>{m.apoiar_about_heading()}</h2>
+		<p>{m.apoiar_about_body()}</p>
+		
+		<p class="muted">
+			{m.apoiar_blog_intro()}
+			<br/>
+			<a 
+				href="https://debene.dev/posts/askthedeck-adhd/" 
+				target="_blank" 
+				rel="noopener"
+				class="blog-link"
+			>
+				{m.apoiar_blog_link_text()} →
+			</a>
+		</p>
+
 		<h2>{m.apoiar_contact_heading()}</h2>
 		<p class="muted">
 			{m.apoiar_contact_body()}
@@ -125,6 +141,18 @@
 		font-size: 0.9rem;
 		color: #d4af37;
 		user-select: all;
+	}
+
+	.blog-link {
+		color: #d4af37;
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.blog-link:hover,
+	.blog-link:focus-visible {
+		text-decoration: underline;
+		outline: none;
 	}
 
 	.back-footer {
