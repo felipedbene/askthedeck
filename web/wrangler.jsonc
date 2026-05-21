@@ -3,8 +3,17 @@
 	"name": "ask-the-deck-web",
 	"main": "build/_worker.js",
 	"compatibility_date": "2025-11-28",
+	"observability": {
+		"enabled": true
+	},
 	"assets": {
 		"directory": "build",
 		"binding": "ASSETS"
-	}
+	},
+	"kv_namespaces": [
+		{
+			"binding": "READINGS_KV",
+			"id": "ed027d2465464528a5a3463c9a6f6c9a"
+		}
+	]
 }

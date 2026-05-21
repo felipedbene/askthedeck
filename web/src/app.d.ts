@@ -1,3 +1,5 @@
+import type { KVNamespace, Fetcher, ExecutionContext } from '@cloudflare/workers-types';
+
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
@@ -6,7 +8,15 @@ declare global {
 		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
-		// interface Platform {}
+		interface Platform {
+			env: {
+				ASSETS: Fetcher;
+				READINGS_KV: KVNamespace;
+				DEEPSEEK_API_KEY: string;
+			};
+			context: ExecutionContext;
+			caches: CacheStorage & { default: Cache };
+		}
 	}
 }
 

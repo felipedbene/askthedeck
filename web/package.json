@@ -13,6 +13,7 @@
 		"paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide"
 	},
 	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20260521.1",
 		"@inlang/paraglide-js": "^2.18.1",
 		"@inlang/paraglide-sveltekit": "^0.16.1",
 		"@sveltejs/adapter-auto": "^7.0.1",
