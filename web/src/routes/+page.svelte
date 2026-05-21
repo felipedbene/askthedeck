@@ -6,6 +6,7 @@
 	import ReadButton from '$lib/components/ReadButton.svelte';
 	import Reading from '$lib/components/Reading.svelte';
 	import NewReadingButton from '$lib/components/NewReadingButton.svelte';
+	import ShareControls from '$lib/components/ShareControls.svelte';
 	import { deck } from '$lib/deck/deck.svelte.js';
 	import { reading } from '$lib/deck/reading.svelte.js';
 	import { cardDisplayName } from '$lib/deck/cards.js';
@@ -64,9 +65,16 @@
 			<ShuffleButton onshuffle={() => deck.shuffle()} />
 		{:else}
 			<Reading cards={deck.drawn} />
+			{#if reading.phase === 'success'}
+				<ShareControls readingId={reading.readingId} />
+			{/if}
 			{#if reading.phase === 'success' || reading.phase === 'error'}
 				<NewReadingButton onreset={handleNewReading} />
 			{/if}
 		{/if}
 	</div>
+
+	<p class="mt-12 text-center text-xs text-purple-300/40 max-w-xl mx-auto leading-relaxed">
+		{m.privacy_notice()}
+	</p>
 </div>

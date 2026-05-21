@@ -16,6 +16,7 @@ export interface CardPayload {
 
 interface StartResponse {
 	jobId: string;
+	readingId: string;
 }
 
 const POLL_INTERVAL_MS = 2000;
@@ -24,7 +25,7 @@ export async function startReading(
 	cards: CardPayload[],
 	locale: string,
 	signal?: AbortSignal
-): Promise<string> {
+): Promise<StartResponse> {
 	const res = await fetch('/api/reading/start', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -36,7 +37,7 @@ export async function startReading(
 	}
 	const data = (await res.json()) as StartResponse;
 	if (!data.jobId) throw new Error('Reading start response missing jobId');
-	return data.jobId;
+	return data;
 }
 
 async function fetchStatus(jobId: string, signal?: AbortSignal): Promise<ReadingJobState> {

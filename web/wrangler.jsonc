@@ -15,5 +15,12 @@
 			"binding": "READINGS_KV",
 			"id": "ed027d2465464528a5a3463c9a6f6c9a"
 		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "tarot",
+			"database_id": "6b81bce2-6df7-44a2-b54d-6420e225d74c"
+		}
 	]
 }

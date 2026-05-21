@@ -6,18 +6,21 @@ import {
 	initJob,
 	type CardSpread
 } from '$lib/server/reading.js';
+import { generateReaderId, generateReadingId } from '$lib/server/ids.js';
+import { getReaderIdCookie, setReaderIdCookie } from '$lib/server/cookies.js';
+import { upsertReader } from '$lib/server/db.js';
 
 interface StartRequest {
 	cards: CardSpread[];
 	locale?: string;
 }
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, cookies }) => {
 	if (!platform) {
 		throw error(500, 'Platform bindings unavailable');
 	}
-	const { READINGS_KV, DEEPSEEK_API_KEY } = platform.env;
-	if (!READINGS_KV || !DEEPSEEK_API_KEY) {
+	const { READINGS_KV, DB, DEEPSEEK_API_KEY } = platform.env;
+	if (!READINGS_KV || !DB || !DEEPSEEK_API_KEY) {
 		throw error(500, 'Reading service is not configured');
 	}
 
@@ -32,12 +35,45 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		throw error(400, 'Request must include a non-empty `cards` array');
 	}
 
+	const locale = body.locale || 'en';
+
+	// Identify the reader. Accept a pre-existing cookie value; if no row
+	// exists for it (data wiped, fresh worker, etc.) just upsert under it.
+	let readerId = getReaderIdCookie(cookies);
+	if (!readerId) {
+		readerId = generateReaderId();
+	}
+	const now = Date.now();
+	try {
+		await upsertReader(DB, readerId, locale, now);
+	} catch (err) {
+		// Don't fail the whole request — the reading can still be generated
+		// and served via KV polling. Continuity for this reader is just
+		// lost for this call.
+		console.error(
+			'[d1] failed to upsert reader',
+			readerId,
+			err instanceof Error ? err.message : err
+		);
+	}
+	setReaderIdCookie(cookies, readerId);
+
 	const jobId = generateJobId();
+	const readingId = generateReadingId();
 	await initJob(READINGS_KV, jobId);
 
 	platform.context.waitUntil(
-		generateReading(jobId, body.cards, READINGS_KV, DEEPSEEK_API_KEY, body.locale)
+		generateReading(
+			jobId,
+			readingId,
+			readerId,
+			body.cards,
+			READINGS_KV,
+			DB,
+			DEEPSEEK_API_KEY,
+			locale
+		)
 	);
 
-	return json({ jobId });
+	return json({ jobId, readingId });
 };
