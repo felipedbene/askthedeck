@@ -11,5 +11,12 @@
 	"position_potential": "Potential in 7 Days",
 	"loading_preparing": "Preparing your reading...",
 	"loading_error": "Error getting reading: {error}",
-	"locale_switcher_label": "Language"
+	"locale_switcher_label": "Language",
+	"share_button": "Share",
+	"share_publishing": "Creating link…",
+	"share_copy": "Copy link",
+	"share_copied": "Copied!",
+	"share_unpublish": "Make private",
+	"share_failed": "Couldn't create the share link. Try again.",
+	"privacy_notice": "Readings are saved so we can show your history and weave continuity. No account needed — we use a cookie to remember you on this device."
 }

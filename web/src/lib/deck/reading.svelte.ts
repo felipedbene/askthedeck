@@ -13,6 +13,7 @@ class ReadingState {
 	progress = $state<number>(0);
 	prediction = $state<string>('');
 	error = $state<string>('');
+	readingId = $state<string | null>(null);
 
 	#controller: AbortController | null = null;
 
@@ -30,9 +31,11 @@ class ReadingState {
 		this.progress = 0;
 		this.prediction = '';
 		this.error = '';
+		this.readingId = null;
 
 		try {
-			const jobId = await startReading(cards, locale, controller.signal);
+			const { jobId, readingId } = await startReading(cards, locale, controller.signal);
+			this.readingId = readingId;
 			const prediction = await pollReadingStatus(
 				jobId,
 				(state: ReadingJobState) => {
@@ -66,6 +69,7 @@ class ReadingState {
 		this.progress = 0;
 		this.prediction = '';
 		this.error = '';
+		this.readingId = null;
 	}
 }
 

@@ -11,5 +11,12 @@
 	"position_potential": "Potencial en 7 Días",
 	"loading_preparing": "Preparando tu lectura...",
 	"loading_error": "Error al obtener lectura: {error}",
-	"locale_switcher_label": "Idioma"
+	"locale_switcher_label": "Idioma",
+	"share_button": "Compartir",
+	"share_publishing": "Creando enlace…",
+	"share_copy": "Copiar enlace",
+	"share_copied": "¡Copiado!",
+	"share_unpublish": "Hacer privada",
+	"share_failed": "No se pudo crear el enlace. Inténtalo de nuevo.",
+	"privacy_notice": "Guardamos las lecturas para mostrar tu historial y tejer continuidad. Sin cuenta — usamos una cookie para recordarte en este dispositivo."
 }
