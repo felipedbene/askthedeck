@@ -63,7 +63,7 @@
 			<ReadButton visible={deck.isComplete} onread={handleRead} />
 			<ShuffleButton onshuffle={() => deck.shuffle()} />
 		{:else}
-			<Reading />
+			<Reading cards={deck.drawn} />
 			{#if reading.phase === 'success' || reading.phase === 'error'}
 				<NewReadingButton onreset={handleNewReading} />
 			{/if}
