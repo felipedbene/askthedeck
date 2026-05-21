@@ -1,52 +1,56 @@
 # Ask The Deck
 
-A tarot reading app that weaves together card wisdom with real-time astrological context, powered by Cloudflare Workers and DeepSeek AI.
+A tarot reading app that weaves together card wisdom with real astronomical context. Tap the deck three times, get a narrative reading anchored to the actual moon phase, moon sign, and zodiac season at the moment you draw.
+
+**Live:** https://ask-the-deck-web.felipe-debene.workers.dev
 
 ## Features
 
-- **Interactive 3-Card Spread**: 7-day guidance with positions for Current State, Focus for Growth, and Potential in 7 Days
-- **Cosmic Context Integration**: Readings incorporate multiple astrological aspects:
-  - Current Moon Phase and Moon Sign
-  - Zodiac Season (Sun's position)
-  - Planetary Day (traditional day ruler)
-  - Current date and cosmic timing
-- **AI-Powered Interpretations**: DeepSeek AI generates flowing, narrative-style readings that blend card meanings with astrological weather
-- **Full Tarot Deck**: Select from all 78 traditional tarot cards (22 Major Arcana + 56 Minor Arcana)
-- **Visual Card Display**: Selected cards appear with their actual tarot card images, position labels, and card names
-- **Mobile-First Responsive Design**: Optimized for all devices with touch-friendly interactions and responsive grid layout
-- **Mystical UI Theme**: Purple and gold cosmic color scheme with smooth gradients and animations
-- **Shuffle & Reset**: Clear your spread and start fresh anytime
+- **Three-card spread** — Current State, Focus for Growth, Potential in 7 Days
+- **Real astrology** — moon phase, moon sign, and sun sign computed live with `astronomy-engine`, not approximated
+- **Three languages** — English, Brazilian Portuguese (pt-BR), Mexican Spanish (es-MX); the reading comes back in the language you pick
+- **Mobile-first deck UI** — tap to draw, cards flip face-up in their slots, full 78-card deck (22 Major + 56 Minor Arcana)
+- **Same-day caching** — identical draws on the same UTC day reuse the cached reading instead of paying for DeepSeek twice
 
-## Tech Stack
+## Tech stack
 
-- **Frontend**: Vanilla JavaScript, HTML, Tailwind CSS
-- **Backend**: Cloudflare Workers
-- **AI**: DeepSeek AI
-- **Deployment**: Cloudflare Pages/Workers
+- **SvelteKit** on **Cloudflare Workers** (`@sveltejs/adapter-cloudflare`)
+- **Tailwind CSS** + **Paraglide** i18n
+- **DeepSeek** for reading generation
+- **Cloudflare KV** for job state and the reading cache
+- **`astronomy-engine`** for real ephemerides
 
-## Local Development
+## Local development
 
 ```bash
-wrangler dev
+cd web
+npm install
+echo "DEEPSEEK_API_KEY=sk-..." > .dev.vars
+npm run dev          # http://localhost:5173
 ```
 
-Visit `http://localhost:8787` to see the app.
+KV and other Cloudflare bindings are wired up automatically from `web/wrangler.jsonc`.
 
 ## Deployment
 
 ```bash
-wrangler deploy
+cd web
+npm run build
+wrangler deploy --config wrangler.jsonc
 ```
 
-## How It Works
+The `DEEPSEEK_API_KEY` secret must be set on the worker:
 
-1. Select 3 cards by clicking on the card backs in the responsive grid
-2. Watch as your selected cards appear with their images and position labels
-3. Click "Read Cards" to receive your AI-generated interpretation
-4. Use "Clear & Shuffle" to reset and start over with a fresh deck
+```bash
+echo "$DEEPSEEK_API_KEY" | wrangler secret put DEEPSEEK_API_KEY --config web/wrangler.jsonc
+```
 
-## Card Deck
+(Pipe the value in via stdin — the interactive prompt can silently upload an empty secret.)
 
-Includes all 78 cards of the traditional tarot deck:
-- 22 Major Arcana cards
-- 56 Minor Arcana cards (4 suits: Wands, Cups, Swords, Pentacles)
+## How it works
+
+1. You tap the face-down deck three times. Each tap fills the next slot and flips face-up.
+2. Hit **Read** — the client POSTs the spread to `/api/reading/start`, gets a `jobId`, and polls `/api/reading/status/:jobId` every two seconds.
+3. The server computes the current astrological weather, builds a structured prompt anchored to each spread position, and asks DeepSeek for a reading in your locale.
+4. The reading streams back as markdown and renders below the deck.
+5. Tap **New Reading** to clear the slots and reshuffle.
