@@ -1,0 +1,10 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "ask-the-deck-web",
+	"main": "build/_worker.js",
+	"compatibility_date": "2025-11-28",
+	"assets": {
+		"directory": "build",
+		"binding": "ASSETS"
+	}
+}

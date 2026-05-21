@@ -1,0 +1,15 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_title": "Ask The Deck",
+	"app_tagline": "Draw three cards to illuminate your path over the next 7 days. Each card reveals a layer of wisdom—where you stand now, what calls for your attention, and the potential waiting to unfold.",
+	"cosmic_timing": "The cards speak through cosmic timing and ancient symbolism",
+	"shuffle_button": "Shuffle",
+	"read_button": "Read Cards",
+	"new_reading_button": "New Reading",
+	"position_current": "Current State",
+	"position_growth": "Focus for Growth",
+	"position_potential": "Potential in 7 Days",
+	"loading_preparing": "Preparing your reading...",
+	"loading_error": "Error getting reading: {error}",
+	"locale_switcher_label": "Language"
+}
