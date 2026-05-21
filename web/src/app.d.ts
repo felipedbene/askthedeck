@@ -1,4 +1,9 @@
-import type { KVNamespace, Fetcher, ExecutionContext } from '@cloudflare/workers-types';
+import type {
+	KVNamespace,
+	Fetcher,
+	ExecutionContext,
+	D1Database
+} from '@cloudflare/workers-types';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -12,6 +17,7 @@ declare global {
 			env: {
 				ASSETS: Fetcher;
 				READINGS_KV: KVNamespace;
+				DB: D1Database;
 				DEEPSEEK_API_KEY: string;
 			};
 			context: ExecutionContext;

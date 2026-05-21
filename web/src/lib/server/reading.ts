@@ -7,13 +7,17 @@
  *    and runs the progress-message loop in parallel
  * 3. Client polls GET /api/reading/status/:jobId every 2s
  *
- * Jobs auto-expire from KV after 1 hour.
- *
- * Identical requests on the same UTC day are cached in KV (24h TTL) keyed
- * on hash(sortedCards + date + locale) to avoid paying DeepSeek twice.
+ * Persistence:
+ * - KV holds job state (1h TTL) and a 24h reading-content cache keyed on
+ *   sha256(sortedCards + UTC-date + locale)
+ * - D1 holds the durable per-reader history (readers + readings tables).
+ *   Cache hits still insert a D1 row for this reader so it appears in their
+ *   history.
  */
-import type { KVNamespace } from '@cloudflare/workers-types';
+import type { D1Database, KVNamespace } from '@cloudflare/workers-types';
 import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
+import { buildPriorReadingsContext } from './continuity.js';
+import { getRecentReadingsByOwner, insertReading } from './db.js';
 
 export interface CardSpread {
 	position: string;
@@ -23,8 +27,19 @@ export interface CardSpread {
 export type ReadingJobState =
 	| { status: 'pending'; message: string; progress: number }
 	| { status: 'processing'; message: string; progress: number }
-	| { status: 'completed'; message: string; prediction: string }
+	| { status: 'completed'; message: string; prediction: string; readingId?: string }
 	| { status: 'error'; message: string };
+
+interface AstrologySnapshot {
+	timestamp: string;
+	sunLongitude: number;
+	sunSign: string;
+	moonLongitude: number;
+	moonSign: string;
+	phaseAngle: number;
+	moonPhase: string;
+	planetaryDay: string;
+}
 
 const JOB_TTL_SECONDS = 3600;
 const CACHE_TTL_SECONDS = 24 * 60 * 60;
@@ -85,22 +100,16 @@ function getZodiacSign(longitude: number): string {
 }
 
 function getMoonPhaseName(phaseAngle: number): string {
-	// MoonPhase returns 0–360°: 0 new, 90 first quarter, 180 full, 270 last quarter.
-	// Eight 45° buckets, centered so e.g. "New Moon" covers 337.5°–22.5°.
 	const shifted = (phaseAngle + 22.5 + 360) % 360;
 	return MOON_PHASES[Math.floor(shifted / 45)];
 }
 
 /**
- * Sanity check that our phase-name mapping agrees with the phase angle.
- *
- * Note: `MoonPhase(date)` is defined by the library as `(moonLon − sunLon)
- * mod 360`, so recomputing that from `EclipticGeoMoon` and `SunPosition`
- * and comparing is partly tautological — the values come from the same
- * source. The check still catches two things:
- *   1. I've mis-mapped phaseAngle → phase name (swapped buckets, off-by-one)
- *   2. A future library version changes MoonPhase's convention
- *      (e.g. starts returning radians, or moon−sun vs sun−moon)
+ * See feedback in commit history: `MoonPhase(date)` is library-defined as
+ * `(moonLon − sunLon) mod 360`, so this comparison is partly tautological
+ * when both sides come from the same library. It still catches (a) bucket
+ * mis-mapping in our phase-name code, and (b) a future library version
+ * silently changing MoonPhase's convention.
  */
 function checkAstrologyConsistency(
 	sunLongitude: number,
@@ -108,7 +117,7 @@ function checkAstrologyConsistency(
 	phaseAngle: number,
 	phaseName: string
 ): void {
-	const computedAngle = ((moonLongitude - sunLongitude) % 360 + 360) % 360;
+	const computedAngle = (((moonLongitude - sunLongitude) % 360) + 360) % 360;
 	const diff = Math.min(
 		Math.abs(computedAngle - phaseAngle),
 		360 - Math.abs(computedAngle - phaseAngle)
@@ -128,9 +137,7 @@ function checkAstrologyConsistency(
 	}
 }
 
-function getAstrologyContext(): string {
-	const now = new Date();
-
+function getAstrology(now: Date): { snapshot: AstrologySnapshot; promptBlock: string } {
 	const sunPos = SunPosition(now);
 	const moonPos = EclipticGeoMoon(now);
 	const phaseAngle = MoonPhase(now);
@@ -152,16 +159,33 @@ function getAstrologyContext(): string {
 
 	checkAstrologyConsistency(sunLongitude, moonLongitude, phaseAngle, moonPhaseName);
 
-	return `**CONTEXTUAL FRAMEWORK:**
+	const snapshot: AstrologySnapshot = {
+		timestamp: now.toISOString(),
+		sunLongitude,
+		sunSign,
+		moonLongitude,
+		moonSign,
+		phaseAngle,
+		moonPhase: moonPhaseName,
+		planetaryDay
+	};
+
+	const promptBlock = `**CONTEXTUAL FRAMEWORK:**
 - **Current Moon Phase:** ${moonPhaseName} in ${moonSign}
 - **Zodiac Season:** ${sunSign} Season
 - **Planetary Day:** ${planetaryDay}
 - **Date:** ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+
+	return { snapshot, promptBlock };
 }
 
-function buildPrompt(cards: CardSpread[], responseLanguage: string): string {
-	const cardSpread = cards.map((c) => `${c.position}: ${c.name}`).join(', ');
-	const astrologyContext = getAstrologyContext();
+function buildPrompt(args: {
+	cards: CardSpread[];
+	responseLanguage: string;
+	astrologyBlock: string;
+	priorReadings: string;
+}): string {
+	const cardSpread = args.cards.map((c) => `${c.position}: ${c.name}`).join(', ');
 
 	return `You are an experienced tarot reader who speaks plainly and with conviction. The seeker has drawn a three-card spread. Each card sits in a specific position; read each card AS THAT POSITION, not as a generic card meaning.
 
@@ -179,9 +203,17 @@ ${cardSpread}
 
 THE ASTROLOGICAL WEATHER
 
-${astrologyContext}
+${args.astrologyBlock}
 
 Use the moon phase and moon sign to color how Position 2's work will FEEL — waxing energy builds, waning energy releases; fire signs push, water signs absorb. Use the zodiac season as the broad terrain. The planetary day is a minor accent, not a headline.
+
+PRIOR READINGS (most recent first, up to 5)
+
+${args.priorReadings}
+
+CONTINUITY GUIDANCE
+
+If there is a clear narrative thread between the prior cards and today's spread, you may weave it in subtly — for example, "the Three of Pentacles you carried last week has matured into..." Do not force continuity if there isn't a natural one. Do not invent details about the reader's life that weren't in the prior readings above.
 
 STRUCTURE
 
@@ -214,10 +246,16 @@ WHAT YOU MUST NOT DO
 - Do not resolve every card's challenge with a tidy spiritual lesson.
 - Do not address the seeker with "dear one", "beloved", "querido buscador", "alma amada" or any equivalent. Address them as "you" / "você" / "tú", directly.
 - Do not begin with "Ah," "I see...", "Behold," or any throat-clearing opener. Start with the first card's heading.
+- NEVER reference information you weren't explicitly given:
+  - The reader's location, city, country, or timezone
+  - The current time of day or day of week beyond what's in the astrological weather above
+  - The reader's device, browser, or language preferences beyond the requested output language
+  - Anything implying you "see" or "sense" the reader personally
+  The ONLY legitimate personal context is what appears in PRIOR READINGS above.
 
 RESPONSE LANGUAGE
 
-Write the entire reading in ${responseLanguage}. The English banned list above applies to natural translations in that language even if not explicitly listed.
+Write the entire reading in ${args.responseLanguage}. The English banned list above applies to natural translations in that language even if not explicitly listed.
 
 Begin.`;
 }
@@ -251,7 +289,7 @@ async function readingCacheKey(cards: CardSpread[], locale: string): Promise<str
 		.map((c) => `${c.position}|${c.name}`)
 		.sort()
 		.join(';');
-	const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+	const today = new Date().toISOString().slice(0, 10);
 	const hash = await sha256Hex(`${sortedCards}__${today}__${locale}`);
 	return `reading-cache:${hash}`;
 }
@@ -270,43 +308,109 @@ async function runProgressLoop(
 		});
 		await new Promise((resolve) => setTimeout(resolve, PROGRESS_INTERVAL_MS));
 	}
-	// If the API is still in flight after all messages have cycled, hold on
-	// the last one (don't loop back and look like we restarted).
 	while (!stopFlag.done) {
 		await new Promise((resolve) => setTimeout(resolve, PROGRESS_INTERVAL_MS));
 	}
 }
 
+/**
+ * Persist a completed reading to D1. Errors are logged and swallowed —
+ * the user still sees the reading via the KV job, per ticket constraint.
+ */
+async function persistReading(
+	db: D1Database,
+	args: {
+		readingId: string;
+		readerId: string;
+		now: number;
+		locale: string;
+		cards: CardSpread[];
+		prediction: string;
+		astrology: AstrologySnapshot;
+	}
+): Promise<void> {
+	try {
+		await insertReading(db, {
+			id: args.readingId,
+			ownerId: args.readerId,
+			createdAt: args.now,
+			locale: args.locale,
+			cards: args.cards,
+			prediction: args.prediction,
+			astrology: args.astrology
+		});
+	} catch (err) {
+		console.error(
+			'[d1] failed to persist reading',
+			args.readingId,
+			err instanceof Error ? err.message : err
+		);
+	}
+}
+
 export async function generateReading(
 	jobId: string,
+	readingId: string,
+	readerId: string,
 	cards: CardSpread[],
 	kv: KVNamespace,
+	db: D1Database,
 	deepseekApiKey: string,
-	locale?: string
+	locale: string
 ): Promise<void> {
 	const normalizedLocale = locale || 'en';
 	const responseLanguage = LOCALE_NAMES[normalizedLocale] || 'English';
+	const now = Date.now();
+	const nowDate = new Date(now);
 
 	const stopFlag = { done: false };
 	const progressTask = runProgressLoop(kv, jobId, stopFlag);
 
 	try {
-		// Cache lookup — identical (sorted cards, locale, UTC day) skips DeepSeek.
+		const { snapshot: astrology, promptBlock: astrologyBlock } = getAstrology(nowDate);
+
 		const cacheKey = await readingCacheKey(cards, normalizedLocale);
 		const cached = await kv.get(cacheKey);
 		if (cached) {
 			console.log(`[cache hit] ${cacheKey}`);
+			await persistReading(db, {
+				readingId,
+				readerId,
+				now,
+				locale: normalizedLocale,
+				cards,
+				prediction: cached,
+				astrology
+			});
 			stopFlag.done = true;
 			await progressTask;
 			await putJobState(kv, jobId, {
 				status: 'completed',
 				message: 'Your reading is ready',
-				prediction: cached
+				prediction: cached,
+				readingId
 			});
 			return;
 		}
 
-		const prompt = buildPrompt(cards, responseLanguage);
+		// Prior readings for continuity (excluding the one we're about to write)
+		let priorContext = "This is the reader's first session.";
+		try {
+			const priors = await getRecentReadingsByOwner(db, readerId, readingId, 5);
+			priorContext = buildPriorReadingsContext(priors, normalizedLocale, now);
+		} catch (err) {
+			console.error(
+				'[d1] failed to load priors for continuity',
+				err instanceof Error ? err.message : err
+			);
+		}
+
+		const prompt = buildPrompt({
+			cards,
+			responseLanguage,
+			astrologyBlock,
+			priorReadings: priorContext
+		});
 
 		const response = await fetch('https://api.deepseek.com/chat/completions', {
 			method: 'POST',
@@ -338,13 +442,24 @@ export async function generateReading(
 
 		await kv.put(cacheKey, prediction, { expirationTtl: CACHE_TTL_SECONDS });
 
+		await persistReading(db, {
+			readingId,
+			readerId,
+			now,
+			locale: normalizedLocale,
+			cards,
+			prediction,
+			astrology
+		});
+
 		stopFlag.done = true;
 		await progressTask;
 
 		await putJobState(kv, jobId, {
 			status: 'completed',
 			message: 'Your reading is ready',
-			prediction
+			prediction,
+			readingId
 		});
 	} catch (error) {
 		stopFlag.done = true;
