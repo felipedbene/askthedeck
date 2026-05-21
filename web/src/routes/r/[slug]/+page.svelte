@@ -4,12 +4,16 @@
 		cardImageUrl,
 		cardIdFromDisplayName,
 		cardDisplayNameLocalized,
+		cardHighlightWord,
 		positionLabelLocalized
 	} from '$lib/deck/cards.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as m from '$lib/paraglide/messages.js';
 	import { trackEvent } from '$lib/api/events.js';
+	import TarotCard from '$lib/components/TarotCard.svelte';
 	import type { PageData } from './$types.js';
+
+	const REVEAL_DELAYS = [0.1, 0.25, 0.4];
 
 	function handleCloserClick() {
 		trackEvent('inline_closer_clicked');
@@ -18,18 +22,6 @@
 	let { data }: { data: PageData } = $props();
 
 	const html = $derived(renderMarkdown(data.reading.prediction));
-
-	function imageFor(name: string | undefined): string | null {
-		if (!name) return null;
-		const id = cardIdFromDisplayName(name);
-		return id ? cardImageUrl(id) : null;
-	}
-
-	function localizedCardName(name: string | undefined): string {
-		if (!name) return '';
-		const id = cardIdFromDisplayName(name);
-		return id ? cardDisplayNameLocalized(id, getLocale()) : name;
-	}
 
 	function localizedPosition(label: string | undefined): string {
 		if (!label) return '';
@@ -65,19 +57,28 @@
 
 	{#if data.reading.cards.length > 0}
 		<div class="strip" aria-label="The spread">
-			{#each data.reading.cards as card}
-				{@const img = imageFor(card.name)}
-				{@const nameLoc = localizedCardName(card.name)}
+			{#each data.reading.cards as card, i}
+				{@const id = cardIdFromDisplayName(card.name ?? '')}
+				{@const nameLoc = id
+					? cardDisplayNameLocalized(id, getLocale())
+					: (card.name ?? '')}
 				{@const posLoc = localizedPosition(card.position)}
-				<figure class="strip-card">
-					{#if img}
-						<img src={img} alt={nameLoc} draggable="false" />
-					{/if}
-					<figcaption>
-						{#if posLoc}<span class="strip-position">{posLoc}</span>{/if}
-						{#if nameLoc}<span class="strip-name">{nameLoc}</span>{/if}
-					</figcaption>
-				</figure>
+				{#if id}
+					<TarotCard
+						imageSrc={cardImageUrl(id)}
+						positionLabel={posLoc}
+						cardName={nameLoc}
+						highlightWord={cardHighlightWord(id, getLocale())}
+						revealDelay={REVEAL_DELAYS[i] ?? 0}
+					/>
+				{:else}
+					<!-- Unknown card slug fallback: render the stored name plainly,
+					     no image lookup possible. Keeps the layout intact. -->
+					<div class="card-fallback">
+						{#if posLoc}<span>{posLoc}</span>{/if}
+						{#if nameLoc}<strong>{nameLoc}</strong>{/if}
+					</div>
+				{/if}
 			{/each}
 		</div>
 	{/if}
@@ -105,47 +106,17 @@
 		margin-bottom: 1.75rem;
 	}
 
-	.strip-card {
+	@media (min-width: 480px) {
+		.strip { gap: 1.25rem; }
+	}
+
+	.card-fallback {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.4rem;
-		margin: 0;
-		min-width: 0;
-	}
-
-	.strip-card img {
-		width: 100%;
-		max-width: 7rem;
-		aspect-ratio: 1 / 1.6;
-		object-fit: contain;
-		border-radius: 0.4rem;
-		background-color: #2a2235;
-		box-shadow:
-			0 4px 12px rgba(0, 0, 0, 0.35),
-			0 0 0 1px rgba(212, 175, 55, 0.2) inset;
-	}
-
-	.strip-card figcaption {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.1rem;
-		text-align: center;
-		line-height: 1.2;
-	}
-
-	.strip-position {
-		font-size: 0.65rem;
-		color: rgb(196 181 253);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	.strip-name {
-		font-size: 0.75rem;
-		color: #d4af37;
-		font-weight: 600;
+		gap: 0.25rem;
+		font-size: 0.85rem;
+		color: var(--cream);
 	}
 
 	.prediction {

@@ -4,11 +4,15 @@
 	import {
 		cardDisplayNameLocalized,
 		cardImageUrl,
+		cardHighlightWord,
 		type CardId
 	} from '$lib/deck/cards.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as m from '$lib/paraglide/messages.js';
 	import { trackEvent } from '$lib/api/events.js';
+	import TarotCard from '$lib/components/TarotCard.svelte';
+
+	const REVEAL_DELAYS = [0.1, 0.25, 0.4];
 
 	function handleCloserClick() {
 		trackEvent('inline_closer_clicked');
@@ -50,13 +54,13 @@
 	{#if cards.length > 0}
 		<div class="strip" aria-label="Your spread">
 			{#each cards as card, i}
-				<figure class="strip-card">
-					<img src={cardImageUrl(card)} alt={localizedName(card)} draggable="false" />
-					<figcaption>
-						<span class="strip-position">{POSITION_LABELS[i]?.() ?? ''}</span>
-						<span class="strip-name">{localizedName(card)}</span>
-					</figcaption>
-				</figure>
+				<TarotCard
+					imageSrc={cardImageUrl(card)}
+					positionLabel={POSITION_LABELS[i]?.() ?? ''}
+					cardName={localizedName(card)}
+					highlightWord={cardHighlightWord(card, getLocale())}
+					revealDelay={REVEAL_DELAYS[i] ?? 0}
+				/>
 			{/each}
 		</div>
 	{/if}
@@ -101,57 +105,11 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 0.75rem;
-	}
-
-	.strip-card {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.4rem;
-		margin: 0;
-		min-width: 0;
-	}
-
-	.strip-card img {
-		width: 100%;
-		max-width: 6.5rem;
-		aspect-ratio: 1 / 1.6;
-		object-fit: contain;
-		border-radius: 0.4rem;
-		background-color: #2a2235;
-		box-shadow:
-			0 4px 12px rgba(0, 0, 0, 0.35),
-			0 0 0 1px rgba(212, 175, 55, 0.2) inset;
-		user-select: none;
-		-webkit-user-drag: none;
-	}
-
-	.strip-card figcaption {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.1rem;
-		text-align: center;
-		line-height: 1.2;
-	}
-
-	.strip-position {
-		font-size: 0.65rem;
-		color: rgb(196 181 253);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	.strip-name {
-		font-size: 0.75rem;
-		color: #d4af37;
-		font-weight: 600;
+		padding: 0.25rem 0;
 	}
 
 	@media (min-width: 480px) {
-		.strip { gap: 1rem; }
-		.strip-position { font-size: 0.7rem; }
-		.strip-name { font-size: 0.85rem; }
+		.strip { gap: 1.25rem; }
 	}
 
 	.loading {

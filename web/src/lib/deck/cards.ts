@@ -187,6 +187,38 @@ export function cardIdFromDisplayName(name: string): CardId | null {
 	return _displayNameToId.get(name.trim().toLowerCase()) ?? null;
 }
 
+/**
+ * For SCRUM-5's typographic hierarchy: the "singing" portion of a card
+ * name, italicized in gold-bright by TarotCard.svelte.
+ *
+ * Default rule: the LAST whitespace-delimited token of the localized
+ * display name. That gets minors right ("Ten of Swords" → "Swords",
+ * "Sete de Copas" → "Copas"), and most majors with a one-word noun
+ * ("The Fool" → "Fool", "A Sacerdotisa" → "Sacerdotisa", "La Rueda de
+ * la Fortuna" → "Fortuna").
+ *
+ * Overrides handle compound nouns where italicizing just the last word
+ * reads oddly ("The Hanged Man" → italicize "Hanged Man" not "Man";
+ * "The High Priestess" → italicize "High Priestess" not "Priestess").
+ * In pt-BR / es-MX the equivalents are single nouns so they need no
+ * override.
+ */
+const HIGHLIGHT_OVERRIDES: Partial<Record<Locale, Partial<Record<CardId, string>>>> = {
+	en: {
+		'02-TheHighPriestess': 'High Priestess',
+		'12-TheHangedMan': 'Hanged Man'
+	}
+};
+
+export function cardHighlightWord(id: CardId, locale: string): string {
+	const loc = normalizeLocale(locale);
+	const override = HIGHLIGHT_OVERRIDES[loc]?.[id];
+	if (override) return override;
+	const name = cardDisplayNameLocalized(id, loc);
+	const parts = name.split(/\s+/);
+	return parts[parts.length - 1];
+}
+
 type PositionKey = 'current' | 'growth' | 'potential';
 
 const POSITION_LABELS: Record<Locale, Record<PositionKey, string>> = {
