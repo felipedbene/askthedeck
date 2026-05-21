@@ -25,8 +25,8 @@ export interface CardSpread {
 }
 
 export type ReadingJobState =
-	| { status: 'pending'; message: string; progress: number }
-	| { status: 'processing'; message: string; progress: number }
+	| { status: 'pending'; message: string; progress: number; messageIndex?: number }
+	| { status: 'processing'; message: string; progress: number; messageIndex?: number }
 	| { status: 'completed'; message: string; prediction: string; readingId?: string }
 	| { status: 'error'; message: string };
 
@@ -305,6 +305,7 @@ async function runProgressLoop(
 		await putJobState(kv, jobId, {
 			status: 'processing',
 			message: PROGRESS_MESSAGES[i],
+			messageIndex: i,
 			progress: Math.floor((i / PROGRESS_MESSAGES.length) * 100)
 		});
 		await new Promise((resolve) => setTimeout(resolve, PROGRESS_INTERVAL_MS));

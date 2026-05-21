@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { reading } from '$lib/deck/reading.svelte.js';
 	import { renderMarkdown } from '$lib/markdown.js';
-	import { cardDisplayName, cardImageUrl, type CardId } from '$lib/deck/cards.js';
+	import {
+		cardDisplayNameLocalized,
+		cardImageUrl,
+		type CardId
+	} from '$lib/deck/cards.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as m from '$lib/paraglide/messages.js';
 
 	let { cards = [] }: { cards?: CardId[] } = $props();
@@ -12,6 +17,27 @@
 		() => m.position_potential()
 	];
 
+	const PROGRESS_MESSAGES = [
+		() => m.progress_msg_1(),
+		() => m.progress_msg_2(),
+		() => m.progress_msg_3(),
+		() => m.progress_msg_4(),
+		() => m.progress_msg_5(),
+		() => m.progress_msg_6(),
+		() => m.progress_msg_7(),
+		() => m.progress_msg_8()
+	];
+
+	const localizedName = (card: CardId) => cardDisplayNameLocalized(card, getLocale());
+
+	const progressMessage = $derived.by(() => {
+		const idx = reading.messageIndex;
+		if (idx !== null && idx >= 0 && idx < PROGRESS_MESSAGES.length) {
+			return PROGRESS_MESSAGES[idx]();
+		}
+		return reading.message || m.loading_preparing();
+	});
+
 	const html = $derived(reading.prediction ? renderMarkdown(reading.prediction) : '');
 </script>
 
@@ -20,10 +46,10 @@
 		<div class="strip" aria-label="Your spread">
 			{#each cards as card, i}
 				<figure class="strip-card">
-					<img src={cardImageUrl(card)} alt={cardDisplayName(card)} draggable="false" />
+					<img src={cardImageUrl(card)} alt={localizedName(card)} draggable="false" />
 					<figcaption>
 						<span class="strip-position">{POSITION_LABELS[i]?.() ?? ''}</span>
-						<span class="strip-name">{cardDisplayName(card)}</span>
+						<span class="strip-name">{localizedName(card)}</span>
 					</figcaption>
 				</figure>
 			{/each}
@@ -33,7 +59,7 @@
 	{#if reading.phase === 'pending'}
 		<div class="loading">
 			<div class="spinner" aria-hidden="true"></div>
-			<p class="loading-msg">{reading.message || m.loading_preparing()}</p>
+			<p class="loading-msg">{progressMessage}</p>
 			{#if reading.progress > 0}
 				<div class="progress-track" aria-hidden="true">
 					<div class="progress-fill" style:width="{reading.progress}%"></div>

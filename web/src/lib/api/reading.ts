@@ -5,6 +5,7 @@ export type ReadingStatus = 'pending' | 'processing' | 'completed' | 'error';
 export interface ReadingJobState {
 	status: ReadingStatus;
 	message?: string;
+	messageIndex?: number;
 	progress?: number;
 	prediction?: string;
 }

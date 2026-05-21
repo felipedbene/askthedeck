@@ -10,6 +10,7 @@ type Phase = 'idle' | 'pending' | 'success' | 'error';
 class ReadingState {
 	phase = $state<Phase>('idle');
 	message = $state<string>('');
+	messageIndex = $state<number | null>(null);
 	progress = $state<number>(0);
 	prediction = $state<string>('');
 	error = $state<string>('');
@@ -28,6 +29,7 @@ class ReadingState {
 
 		this.phase = 'pending';
 		this.message = '';
+		this.messageIndex = null;
 		this.progress = 0;
 		this.prediction = '';
 		this.error = '';
@@ -41,6 +43,7 @@ class ReadingState {
 				(state: ReadingJobState) => {
 					if (controller.signal.aborted) return;
 					if (state.message) this.message = state.message;
+					if (typeof state.messageIndex === 'number') this.messageIndex = state.messageIndex;
 					if (typeof state.progress === 'number') this.progress = state.progress;
 				},
 				controller.signal
@@ -66,6 +69,7 @@ class ReadingState {
 		this.cancel();
 		this.phase = 'idle';
 		this.message = '';
+		this.messageIndex = null;
 		this.progress = 0;
 		this.prediction = '';
 		this.error = '';

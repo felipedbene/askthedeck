@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { renderMarkdown } from '$lib/markdown.js';
-	import { cardImageUrl, cardIdFromDisplayName } from '$lib/deck/cards.js';
+	import {
+		cardImageUrl,
+		cardIdFromDisplayName,
+		cardDisplayNameLocalized,
+		positionLabelLocalized
+	} from '$lib/deck/cards.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types.js';
 
@@ -12,6 +18,17 @@
 		if (!name) return null;
 		const id = cardIdFromDisplayName(name);
 		return id ? cardImageUrl(id) : null;
+	}
+
+	function localizedCardName(name: string | undefined): string {
+		if (!name) return '';
+		const id = cardIdFromDisplayName(name);
+		return id ? cardDisplayNameLocalized(id, getLocale()) : name;
+	}
+
+	function localizedPosition(label: string | undefined): string {
+		if (!label) return '';
+		return positionLabelLocalized(label, getLocale());
 	}
 </script>
 
@@ -45,13 +62,15 @@
 		<div class="strip" aria-label="The spread">
 			{#each data.reading.cards as card}
 				{@const img = imageFor(card.name)}
+				{@const nameLoc = localizedCardName(card.name)}
+				{@const posLoc = localizedPosition(card.position)}
 				<figure class="strip-card">
 					{#if img}
-						<img src={img} alt={card.name ?? ''} draggable="false" />
+						<img src={img} alt={nameLoc} draggable="false" />
 					{/if}
 					<figcaption>
-						{#if card.position}<span class="strip-position">{card.position}</span>{/if}
-						{#if card.name}<span class="strip-name">{card.name}</span>{/if}
+						{#if posLoc}<span class="strip-position">{posLoc}</span>{/if}
+						{#if nameLoc}<span class="strip-name">{nameLoc}</span>{/if}
 					</figcaption>
 				</figure>
 			{/each}
