@@ -2,7 +2,11 @@
 
 A tarot reading app that weaves together card wisdom with real astronomical context. Tap the deck three times, get a narrative reading anchored to the actual moon phase, moon sign, and zodiac season at the moment you draw.
 
-**Live:** https://ask-the-deck-web.felipe-debene.workers.dev
+**Live:**
+
+- English: https://ask.debene.dev
+- Português (pt-BR): https://pergunte.debene.dev
+- Español (es-MX): https://preguntale.debene.dev
 
 ## Features
 
