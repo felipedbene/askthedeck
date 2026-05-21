@@ -3,13 +3,17 @@
  *
  * Async job model:
  * 1. POST /api/reading/start stores a 'pending' job in KV and returns its id
- * 2. ctx.waitUntil(generateReading(...)) updates KV with progress messages,
- *    then calls DeepSeek, then writes 'completed' (or 'error')
+ * 2. ctx.waitUntil(generateReading(...)) fires the DeepSeek call immediately
+ *    and runs the progress-message loop in parallel
  * 3. Client polls GET /api/reading/status/:jobId every 2s
  *
  * Jobs auto-expire from KV after 1 hour.
+ *
+ * Identical requests on the same UTC day are cached in KV (24h TTL) keyed
+ * on hash(sortedCards + date + locale) to avoid paying DeepSeek twice.
  */
 import type { KVNamespace } from '@cloudflare/workers-types';
+import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
 
 export interface CardSpread {
 	position: string;
@@ -23,6 +27,8 @@ export type ReadingJobState =
 	| { status: 'error'; message: string };
 
 const JOB_TTL_SECONDS = 3600;
+const CACHE_TTL_SECONDS = 24 * 60 * 60;
+const PROGRESS_INTERVAL_MS = 800;
 
 const PROGRESS_MESSAGES = [
 	'Shuffling the cosmic deck...',
@@ -41,82 +47,179 @@ const LOCALE_NAMES: Record<string, string> = {
 	'es-MX': 'Mexican Spanish'
 };
 
+const ZODIAC_SIGNS = [
+	'Aries',
+	'Taurus',
+	'Gemini',
+	'Cancer',
+	'Leo',
+	'Virgo',
+	'Libra',
+	'Scorpio',
+	'Sagittarius',
+	'Capricorn',
+	'Aquarius',
+	'Pisces'
+];
+
+const MOON_PHASES = [
+	'New Moon',
+	'Waxing Crescent',
+	'First Quarter',
+	'Waxing Gibbous',
+	'Full Moon',
+	'Waning Gibbous',
+	'Last Quarter',
+	'Waning Crescent'
+];
+
+const PLANETARY_DAYS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+
 export function generateJobId(): string {
 	return `job_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+function getZodiacSign(longitude: number): string {
+	const normalized = ((longitude % 360) + 360) % 360;
+	return ZODIAC_SIGNS[Math.floor(normalized / 30)];
+}
+
+function getMoonPhaseName(phaseAngle: number): string {
+	// MoonPhase returns 0–360°: 0 new, 90 first quarter, 180 full, 270 last quarter.
+	// Eight 45° buckets, centered so e.g. "New Moon" covers 337.5°–22.5°.
+	const shifted = (phaseAngle + 22.5 + 360) % 360;
+	return MOON_PHASES[Math.floor(shifted / 45)];
+}
+
+/**
+ * Sanity check that our phase-name mapping agrees with the phase angle.
+ *
+ * Note: `MoonPhase(date)` is defined by the library as `(moonLon − sunLon)
+ * mod 360`, so recomputing that from `EclipticGeoMoon` and `SunPosition`
+ * and comparing is partly tautological — the values come from the same
+ * source. The check still catches two things:
+ *   1. I've mis-mapped phaseAngle → phase name (swapped buckets, off-by-one)
+ *   2. A future library version changes MoonPhase's convention
+ *      (e.g. starts returning radians, or moon−sun vs sun−moon)
+ */
+function checkAstrologyConsistency(
+	sunLongitude: number,
+	moonLongitude: number,
+	phaseAngle: number,
+	phaseName: string
+): void {
+	const computedAngle = ((moonLongitude - sunLongitude) % 360 + 360) % 360;
+	const diff = Math.min(
+		Math.abs(computedAngle - phaseAngle),
+		360 - Math.abs(computedAngle - phaseAngle)
+	);
+	if (diff > 1) {
+		console.warn(
+			`[astrology] phase angle mismatch: MoonPhase=${phaseAngle.toFixed(2)}°, ` +
+				`(moon−sun)=${computedAngle.toFixed(2)}°, diff=${diff.toFixed(2)}°`
+		);
+	}
+	const expectedName = getMoonPhaseName(computedAngle);
+	if (expectedName !== phaseName) {
+		console.warn(
+			`[astrology] phase name mismatch: angle=${computedAngle.toFixed(2)}° ` +
+				`maps to "${expectedName}" but we said "${phaseName}"`
+		);
+	}
 }
 
 function getAstrologyContext(): string {
 	const now = new Date();
 
-	// Moon phase via simple Julian-day approximation
-	const year = now.getFullYear();
-	const month = now.getMonth() + 1;
-	const day = now.getDate();
+	const sunPos = SunPosition(now);
+	const moonPos = EclipticGeoMoon(now);
+	const phaseAngle = MoonPhase(now);
 
-	let adjustedYear = year;
-	let adjustedMonth = month;
-	if (adjustedMonth < 3) {
-		adjustedYear--;
-		adjustedMonth += 12;
-	}
-	++adjustedMonth;
-	const c = 365.25 * adjustedYear;
-	const e = 30.6 * adjustedMonth;
-	let jd = c + e + day - 694039.09;
-	jd /= 29.5305882;
-	const intPart = Math.trunc(jd);
-	jd -= intPart;
-	const phaseIndex = Math.round(jd * 8) & 7;
+	const sunLongitude = sunPos.elon;
+	const moonLongitude = moonPos.lon;
+	const sunSign = getZodiacSign(sunLongitude);
+	const moonSign = getZodiacSign(moonLongitude);
+	const moonPhaseName = getMoonPhaseName(phaseAngle);
+	const planetaryDay = PLANETARY_DAYS[now.getDay()];
 
-	const moonPhases = [
-		'New Moon',
-		'Waxing Crescent',
-		'First Quarter',
-		'Waxing Gibbous',
-		'Full Moon',
-		'Waning Gibbous',
-		'Last Quarter',
-		'Waning Crescent'
-	];
-	const moonPhaseName = moonPhases[phaseIndex];
-
-	// Sun's zodiac position (approximate)
-	const dayOfYear = Math.floor(
-		(now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
+	console.log(
+		`[astrology] ${now.toISOString()} | ` +
+			`Sun ${sunLongitude.toFixed(2)}° (${sunSign}) | ` +
+			`Moon ${moonLongitude.toFixed(2)}° (${moonSign}) | ` +
+			`Phase ${phaseAngle.toFixed(2)}° (${moonPhaseName}) | ` +
+			`${planetaryDay}'s day`
 	);
-	const sunLongitude = (280.46 + 0.9856474 * dayOfYear) % 360;
-	const zodiacSigns = [
-		'Capricorn',
-		'Aquarius',
-		'Pisces',
-		'Aries',
-		'Taurus',
-		'Gemini',
-		'Cancer',
-		'Leo',
-		'Virgo',
-		'Libra',
-		'Scorpio',
-		'Sagittarius'
-	];
-	const zodiacIndex = Math.floor(((sunLongitude + 10) % 360) / 30);
-	const zodiacSeason = zodiacSigns[zodiacIndex];
 
-	// Moon sign (~13 day offset from sun position)
-	const moonDayOffset = dayOfYear + 13;
-	const moonLongitude = (280.46 + 0.9856474 * moonDayOffset) % 360;
-	const moonSignIndex = Math.floor(((moonLongitude + 10) % 360) / 30);
-	const moonSign = zodiacSigns[moonSignIndex];
-
-	const dayOfWeek = now.getDay();
-	const planetaryDays = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-	const planetaryDay = planetaryDays[dayOfWeek];
+	checkAstrologyConsistency(sunLongitude, moonLongitude, phaseAngle, moonPhaseName);
 
 	return `**CONTEXTUAL FRAMEWORK:**
 - **Current Moon Phase:** ${moonPhaseName} in ${moonSign}
-- **Zodiac Season:** ${zodiacSeason} Season
+- **Zodiac Season:** ${sunSign} Season
 - **Planetary Day:** ${planetaryDay}
 - **Date:** ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+}
+
+function buildPrompt(cards: CardSpread[], responseLanguage: string): string {
+	const cardSpread = cards.map((c) => `${c.position}: ${c.name}`).join(', ');
+	const astrologyContext = getAstrologyContext();
+
+	return `You are an experienced tarot reader who speaks plainly and with conviction. The seeker has drawn a three-card spread. Each card sits in a specific position; read each card AS THAT POSITION, not as a generic card meaning.
+
+THE SPREAD POSITIONS
+
+Position 1 — Current State: what is actually happening in the seeker's life right now. The texture of their present moment. Not where they "are coming from", not what they "want" — what *is*.
+
+Position 2 — Focus for Growth: where their attention should land in the coming days. The work in front of them. Not a destination — a verb.
+
+Position 3 — Potential in 7 Days: a quality of energy that could become available to them within the week, IF they engage with Position 2. Frame this as an atmosphere or invitation, NEVER as a guaranteed outcome or specific event ("you will receive money", "someone will appear").
+
+THE CARDS
+
+${cardSpread}
+
+THE ASTROLOGICAL WEATHER
+
+${astrologyContext}
+
+Use the moon phase and moon sign to color how Position 2's work will FEEL — waxing energy builds, waning energy releases; fire signs push, water signs absorb. Use the zodiac season as the broad terrain. The planetary day is a minor accent, not a headline.
+
+STRUCTURE
+
+Use three subheadings, one per card, in this exact format:
+
+## {Position label}: {Card name}
+
+Then one or two paragraphs of prose for that card. After the third card, add a short closing paragraph (no header) that names the through-line. No bullet lists. No additional headers beyond the three card headers.
+
+HOW TO WRITE THIS READING
+
+- Commit to one interpretation per card. Do not hedge with "this could mean X, or perhaps Y, or possibly Z." Pick the reading that fits this spread in this astrological moment and say it.
+- When two cards pull in different directions, name the tension. Do not smooth it over with "these energies combine to..." Tension is information.
+- Use concrete sensory imagery. "A door left ajar." "The smell of rain on hot pavement." "The weight of a key in your palm." Avoid abstract spiritual vocabulary when a physical image will do.
+
+BANNED PHRASES — DO NOT USE THESE
+
+English:
+"dark night of the soul", "spiritual download", "download", "trust the process", "the universe is conspiring", "sacred invitation", "divine timing", "high vibration", "low vibration", "shadow work", "manifesting", "manifestation", "cosmic weaving", "soul-level", "energetic shift", "alignment" (as in "in alignment"), "ancient wisdom", "the veil is thin", "dear one", "beloved", "sweet soul"
+
+Portuguese (pt-BR):
+"noite escura da alma", "download espiritual", "confie no processo", "confia no processo", "o universo está conspirando", "o universo conspira", "convite sagrado", "sagrado convite", "tempo divino", "alta vibração", "baixa vibração", "vibrar alto", "manifestar", "manifestação" (no sentido New Age), "trabalho de sombra", "tecelagem cósmica", "nível da alma", "mudança energética", "alinhamento" (no sentido "em alinhamento"), "sabedoria ancestral", "o véu está fino", "querido buscador", "querida buscadora", "amada alma", "alma querida"
+
+Spanish (es-MX):
+"noche oscura del alma", "descarga espiritual", "confía en el proceso", "el universo conspira", "el universo está conspirando", "sagrada invitación", "tiempo divino", "alta vibración", "baja vibración", "vibrar alto", "manifestar", "manifestación" (en sentido New Age), "trabajo de sombra", "tejido cósmico", "a nivel del alma", "cambio energético", "alineación", "sabiduría ancestral", "el velo se hace delgado", "querido buscador", "alma amada"
+
+WHAT YOU MUST NOT DO
+
+- Do not promise specific outcomes. The Potential card is an atmosphere, not a forecast.
+- Do not resolve every card's challenge with a tidy spiritual lesson.
+- Do not address the seeker with "dear one", "beloved", "querido buscador", "alma amada" or any equivalent. Address them as "you" / "você" / "tú", directly.
+- Do not begin with "Ah," "I see...", "Behold," or any throat-clearing opener. Start with the first card's heading.
+
+RESPONSE LANGUAGE
+
+Write the entire reading in ${responseLanguage}. The English banned list above applies to natural translations in that language even if not explicitly listed.
+
+Begin.`;
 }
 
 async function putJobState(
@@ -135,6 +238,45 @@ export async function initJob(kv: KVNamespace, jobId: string): Promise<void> {
 	});
 }
 
+async function sha256Hex(input: string): Promise<string> {
+	const data = new TextEncoder().encode(input);
+	const buf = await crypto.subtle.digest('SHA-256', data);
+	return Array.from(new Uint8Array(buf))
+		.map((b) => b.toString(16).padStart(2, '0'))
+		.join('');
+}
+
+async function readingCacheKey(cards: CardSpread[], locale: string): Promise<string> {
+	const sortedCards = [...cards]
+		.map((c) => `${c.position}|${c.name}`)
+		.sort()
+		.join(';');
+	const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+	const hash = await sha256Hex(`${sortedCards}__${today}__${locale}`);
+	return `reading-cache:${hash}`;
+}
+
+async function runProgressLoop(
+	kv: KVNamespace,
+	jobId: string,
+	stopFlag: { done: boolean }
+): Promise<void> {
+	for (let i = 0; i < PROGRESS_MESSAGES.length; i++) {
+		if (stopFlag.done) return;
+		await putJobState(kv, jobId, {
+			status: 'processing',
+			message: PROGRESS_MESSAGES[i],
+			progress: Math.floor((i / PROGRESS_MESSAGES.length) * 100)
+		});
+		await new Promise((resolve) => setTimeout(resolve, PROGRESS_INTERVAL_MS));
+	}
+	// If the API is still in flight after all messages have cycled, hold on
+	// the last one (don't loop back and look like we restarted).
+	while (!stopFlag.done) {
+		await new Promise((resolve) => setTimeout(resolve, PROGRESS_INTERVAL_MS));
+	}
+}
+
 export async function generateReading(
 	jobId: string,
 	cards: CardSpread[],
@@ -142,36 +284,29 @@ export async function generateReading(
 	deepseekApiKey: string,
 	locale?: string
 ): Promise<void> {
-	const responseLanguage = (locale && LOCALE_NAMES[locale]) || 'English';
+	const normalizedLocale = locale || 'en';
+	const responseLanguage = LOCALE_NAMES[normalizedLocale] || 'English';
+
+	const stopFlag = { done: false };
+	const progressTask = runProgressLoop(kv, jobId, stopFlag);
 
 	try {
-		for (let i = 0; i < PROGRESS_MESSAGES.length; i++) {
+		// Cache lookup — identical (sorted cards, locale, UTC day) skips DeepSeek.
+		const cacheKey = await readingCacheKey(cards, normalizedLocale);
+		const cached = await kv.get(cacheKey);
+		if (cached) {
+			console.log(`[cache hit] ${cacheKey}`);
+			stopFlag.done = true;
+			await progressTask;
 			await putJobState(kv, jobId, {
-				status: 'processing',
-				message: PROGRESS_MESSAGES[i],
-				progress: Math.floor((i / PROGRESS_MESSAGES.length) * 100)
+				status: 'completed',
+				message: 'Your reading is ready',
+				prediction: cached
 			});
-			if (i < PROGRESS_MESSAGES.length - 1) {
-				await new Promise((resolve) => setTimeout(resolve, 500));
-			}
+			return;
 		}
 
-		const cardSpread = cards.map((c) => `${c.position}: ${c.name}`).join(', ');
-		const astrologyContext = getAstrologyContext();
-
-		const prompt = `Act as an intuitive, esoteric guide blending Tarot wisdom with astrological insights. You are a wise seer who speaks in a flowing, narrative style that connects cosmic patterns to personal transformation.
-**READING STYLE GUIDELINES:**
-1. **Cosmic Weaving:** Blend the card meanings with the current astrological weather. How does the moon phase color the energy? What does the zodiac season emphasize?
-2. **Intuitive Narrative:** Create a flowing story, not a report. Use phrases like "The cards speak through the [Moon Phase] moon's energy..." or "In this [Zodiac] season, I see..."
-3. **Shadow & Light Integration:** Frame challenges as sacred invitations for growth, especially considering any difficult astrological aspects.
-4. **Practical Magic:** Offer soul-level guidance that feels actionable and resonant with the cosmic timing.
-
-** Tarot Card Spread:** ${cardSpread}
-** Contextual Framework:** ${astrologyContext}
-
-**RESPONSE LANGUAGE:** Write your entire reading in ${responseLanguage}. Preserve the intuitive, esoteric tone in that language.
-
-Begin the interpretation now.`;
+		const prompt = buildPrompt(cards, responseLanguage);
 
 		const response = await fetch('https://api.deepseek.com/chat/completions', {
 			method: 'POST',
@@ -191,9 +326,20 @@ Begin the interpretation now.`;
 		}
 
 		const predictionData = (await response.json()) as {
-			choices: { message: { content: string } }[];
+			choices: { message: { content: string }; finish_reason?: string }[];
 		};
-		const prediction = predictionData.choices[0].message.content;
+		const choice = predictionData.choices[0];
+		const prediction = choice.message.content;
+		const finishReason = choice.finish_reason ?? 'unknown';
+		console.log(`[deepseek] finish_reason=${finishReason}, length=${prediction.length}`);
+		if (finishReason === 'length') {
+			console.warn('[deepseek] response truncated by max_tokens — consider raising the limit');
+		}
+
+		await kv.put(cacheKey, prediction, { expirationTtl: CACHE_TTL_SECONDS });
+
+		stopFlag.done = true;
+		await progressTask;
 
 		await putJobState(kv, jobId, {
 			status: 'completed',
@@ -201,6 +347,8 @@ Begin the interpretation now.`;
 			prediction
 		});
 	} catch (error) {
+		stopFlag.done = true;
+		await progressTask.catch(() => undefined);
 		const message = error instanceof Error ? error.message : String(error);
 		console.error('Error generating reading:', message);
 		await putJobState(kv, jobId, {

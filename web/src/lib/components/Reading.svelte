@@ -1,12 +1,35 @@
 <script lang="ts">
 	import { reading } from '$lib/deck/reading.svelte.js';
 	import { renderMarkdown } from '$lib/markdown.js';
+	import { cardDisplayName, cardImageUrl, type CardId } from '$lib/deck/cards.js';
 	import * as m from '$lib/paraglide/messages.js';
+
+	let { cards = [] }: { cards?: CardId[] } = $props();
+
+	const POSITION_LABELS = [
+		() => m.position_current(),
+		() => m.position_growth(),
+		() => m.position_potential()
+	];
 
 	const html = $derived(reading.prediction ? renderMarkdown(reading.prediction) : '');
 </script>
 
 <div class="reading">
+	{#if cards.length > 0}
+		<div class="strip" aria-label="Your spread">
+			{#each cards as card, i}
+				<figure class="strip-card">
+					<img src={cardImageUrl(card)} alt={cardDisplayName(card)} draggable="false" />
+					<figcaption>
+						<span class="strip-position">{POSITION_LABELS[i]?.() ?? ''}</span>
+						<span class="strip-name">{cardDisplayName(card)}</span>
+					</figcaption>
+				</figure>
+			{/each}
+		</div>
+	{/if}
+
 	{#if reading.phase === 'pending'}
 		<div class="loading">
 			<div class="spinner" aria-hidden="true"></div>
@@ -34,6 +57,66 @@
 		width: 100%;
 		max-width: 36rem;
 		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.strip {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0.75rem;
+	}
+
+	.strip-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		margin: 0;
+		min-width: 0;
+	}
+
+	.strip-card img {
+		width: 100%;
+		max-width: 6.5rem;
+		aspect-ratio: 1 / 1.6;
+		object-fit: contain;
+		border-radius: 0.4rem;
+		background-color: #2a2235;
+		box-shadow:
+			0 4px 12px rgba(0, 0, 0, 0.35),
+			0 0 0 1px rgba(212, 175, 55, 0.2) inset;
+		user-select: none;
+		-webkit-user-drag: none;
+	}
+
+	.strip-card figcaption {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.1rem;
+		text-align: center;
+		line-height: 1.2;
+	}
+
+	.strip-position {
+		font-size: 0.65rem;
+		color: rgb(196 181 253);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.strip-name {
+		font-size: 0.75rem;
+		color: #d4af37;
+		font-weight: 600;
+	}
+
+	@media (min-width: 480px) {
+		.strip { gap: 1rem; }
+		.strip-position { font-size: 0.7rem; }
+		.strip-name { font-size: 0.85rem; }
 	}
 
 	.loading {
