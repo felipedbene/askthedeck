@@ -16,6 +16,7 @@
  */
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types';
 import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
+import { cardNameLocalizedFromEnglish } from '../deck/cards.js';
 import { buildPriorReadingsContext } from './continuity.js';
 import { getRecentReadingsByOwner, insertReading } from './db.js';
 import { logEvent } from './events.js';
@@ -182,11 +183,17 @@ function getAstrology(now: Date): { snapshot: AstrologySnapshot; promptBlock: st
 
 function buildPrompt(args: {
 	cards: CardSpread[];
+	locale: string;
 	responseLanguage: string;
 	astrologyBlock: string;
 	priorReadings: string;
 }): string {
-	const cardSpread = args.cards.map((c) => `${c.position}: ${c.name}`).join(', ');
+	// Card names arrive in canonical English (what D1 and the cache key use).
+	// The prompt gets the locale's own names so the model never invents its
+	// own translation ("Varas" for Wands, or untranslated English).
+	const cardSpread = args.cards
+		.map((c) => `${c.position}: ${cardNameLocalizedFromEnglish(c.name, args.locale)}`)
+		.join(', ');
 
 	return `You are an experienced tarot reader who speaks plainly and with conviction. The seeker has drawn a three-card spread. Each card sits in a specific position; read each card AS THAT POSITION, not as a generic card meaning.
 
@@ -221,6 +228,8 @@ STRUCTURE
 Use three subheadings, one per card, in this exact format:
 
 ## {Position label}: {Card name}
+
+Use the position labels and card names EXACTLY as written in THE CARDS above, character for character. Do not translate, rename, or anglicize them, and use those same card names whenever you mention a card in the prose.
 
 Then one or two paragraphs of prose for that card. After the third card, add a short closing paragraph (no header) that names the through-line. No bullet lists. No additional headers beyond the three card headers.
 
@@ -420,6 +429,7 @@ export async function generateReading(
 
 		const prompt = buildPrompt({
 			cards,
+			locale: normalizedLocale,
 			responseLanguage,
 			astrologyBlock,
 			priorReadings: priorContext

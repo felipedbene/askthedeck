@@ -1,3 +1,4 @@
+import { cardNameLocalizedFromEnglish } from '../deck/cards.js';
 import type { PriorReadingRow } from './db.js';
 
 interface Card {
@@ -26,7 +27,8 @@ export function buildPriorReadingsContext(
 		const cards = safeParseCards(row.cards_json);
 		const names = cards
 			.map((c) => c.name?.trim())
-			.filter((n): n is string => !!n);
+			.filter((n): n is string => !!n)
+			.map((n) => cardNameLocalizedFromEnglish(n, locale));
 		if (names.length === 0) continue;
 		lines.push(`${rtf(row.created_at, now)}: ${names.join(' / ')}`);
 	}

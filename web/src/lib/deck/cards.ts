@@ -188,6 +188,16 @@ export function cardIdFromDisplayName(name: string): CardId | null {
 }
 
 /**
+ * Translate a canonical English display name (the form stored in D1 and
+ * sent over the wire) into the given locale. Falls back to the input
+ * unchanged if the name isn't a known card.
+ */
+export function cardNameLocalizedFromEnglish(name: string, locale: string): string {
+	const id = cardIdFromDisplayName(name);
+	return id ? cardDisplayNameLocalized(id, locale) : name;
+}
+
+/**
  * For SCRUM-5's typographic hierarchy: the "singing" portion of a card
  * name, italicized in gold-bright by TarotCard.svelte.
  *
