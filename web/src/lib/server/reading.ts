@@ -204,6 +204,11 @@ function buildPrompt(args: {
 	const labelGrowth = positionLabel('growth', args.locale);
 	const labelPotential = positionLabel('potential', args.locale);
 
+	// Localize the card name in the continuity example so the model doesn't
+	// imitate an English name (or invent its own translation) in non-English
+	// readings.
+	const exampleCard = cardNameLocalizedFromEnglish('Three of Pentacles', args.locale);
+
 	return `You are an experienced tarot reader who speaks plainly and with conviction. The seeker has drawn a three-card spread. Each card sits in a specific position; read each card AS THAT POSITION, not as a generic card meaning.
 
 THE SPREAD POSITIONS
@@ -230,7 +235,7 @@ ${args.priorReadings}
 
 CONTINUITY GUIDANCE
 
-If there is a clear narrative thread between the prior cards and today's spread, you may weave it in subtly — for example, "the Three of Pentacles you carried last week has matured into..." Do not force continuity if there isn't a natural one. Do not invent details about the reader's life that weren't in the prior readings above.
+If there is a clear narrative thread between the prior cards and today's spread, you may weave it in subtly — for example, "the ${exampleCard} you carried last week has matured into..." Do not force continuity if there isn't a natural one. Do not invent details about the reader's life that weren't in the prior readings above.
 
 STRUCTURE
 
