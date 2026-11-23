@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import { cardImageUrl, type CardId } from '$lib/deck/cards.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { cardImageUrl, type CardId } from '#lib/deck/cards.js';
 	import { untrack } from 'svelte';
 
 	let { drawn = [] }: { drawn?: CardId[] } = $props();

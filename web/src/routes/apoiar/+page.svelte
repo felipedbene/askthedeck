@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import { trackEvent } from '$lib/api/events.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { trackEvent } from '#lib/api/events.js';
 
 	const KOFI_URL = 'https://ko-fi.com/felipedebene';
 	const CONTACT_EMAIL = 'felipe@debene.dev';

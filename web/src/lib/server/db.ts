@@ -1,4 +1,3 @@
-import type { D1Database } from '@cloudflare/workers-types';
 import type { CardSpread } from './reading.js';
 
 export interface ReadingRow {

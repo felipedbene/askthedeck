@@ -1,11 +1,9 @@
+import { env } from 'cloudflare:workers';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 
-export const GET: RequestHandler = async ({ params, platform }) => {
-	if (!platform) {
-		throw error(500, 'Platform bindings unavailable');
-	}
-	const { READINGS_KV } = platform.env;
+export const GET: RequestHandler = async ({ params }) => {
+	const { READINGS_KV } = env;
 	if (!READINGS_KV) {
 		throw error(500, 'Reading service is not configured');
 	}

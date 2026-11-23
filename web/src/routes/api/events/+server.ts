@@ -1,8 +1,9 @@
+import { env, waitUntil } from 'cloudflare:workers';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
-import { getReaderIdCookie } from '$lib/server/cookies.js';
-import { getDefaultLocale } from '$lib/server/locale.js';
-import { isClientEvent, logEvent } from '$lib/server/events.js';
+import { getReaderIdCookie } from '#lib/server/cookies.js';
+import { getDefaultLocale } from '#lib/server/locale.js';
+import { isClientEvent, logEvent } from '#lib/server/events.js';
 
 interface Body {
 	event?: string;
@@ -23,8 +24,8 @@ const VALID_LOCALES = new Set(['en', 'pt-BR', 'es-MX']);
  * request hostname. No IP, no UA, no referrer. The metadata blob is
  * stringified as-is; callers SHOULD send small, schema-shaped payloads.
  */
-export const POST: RequestHandler = async ({ request, platform, cookies, url }) => {
-	if (!platform?.env.DB) {
+export const POST: RequestHandler = async ({ request, cookies, url }) => {
+	if (!env.DB) {
 		throw error(500, 'Analytics not configured');
 	}
 
@@ -45,8 +46,8 @@ export const POST: RequestHandler = async ({ request, platform, cookies, url }) 
 			? body.locale
 			: getDefaultLocale(url.hostname);
 
-	platform.context.waitUntil(
-		logEvent(platform.env.DB, {
+	waitUntil(
+		logEvent(env.DB, {
 			event: body.event,
 			readerId,
 			locale,

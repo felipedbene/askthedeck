@@ -11,7 +11,6 @@
  * The event name allowlist lives here so callers can't drift the schema
  * silently — anything not in the allowlist is rejected with a warning.
  */
-import type { D1Database } from '@cloudflare/workers-types';
 
 export const SERVER_EVENT_TYPES = [
 	'reading_started',

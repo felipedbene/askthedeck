@@ -6,9 +6,9 @@
 	 * Saves selection to localStorage and updates the UI immediately
 	 */
 
-	import { LOCALES, switchLocale, type Locale, type AvailableLanguageTag } from '$lib/i18n.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import * as m from '$lib/paraglide/messages.js';
+	import { LOCALES, switchLocale, type Locale, type AvailableLanguageTag } from '#lib/i18n.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	let isOpen = $state(false);
 

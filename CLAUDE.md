@@ -48,4 +48,4 @@ CI/CD is Cloudflare **Workers Builds** (git integration, configured in the Cloud
 
 ## Known debt
 
-- 3 npm audit findings remain (SvelteKit core + its bundled cookie); the fix requires the SvelteKit 3.x major migration. The paraglide 2.x migration is done (runtime on @inlang/paraglide-js 2.x).
+- None: 0 npm audit findings after the SvelteKit 3 / adapter-cloudflare 9 and paraglide 2.x migrations (Nov 2026). Server code accesses bindings via `import { env, waitUntil } from 'cloudflare:workers'` (adapter 9 removed `event.platform`); binding types come from the generated `worker-configuration.d.ts` (`npx wrangler types`, rerun after wrangler.jsonc changes).

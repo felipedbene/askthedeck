@@ -3,7 +3,7 @@ import {
 	pollReadingStatus,
 	type CardPayload,
 	type ReadingJobState
-} from '$lib/api/reading.js';
+} from '#lib/api/reading.js';
 
 type Phase = 'idle' | 'pending' | 'success' | 'error';
 

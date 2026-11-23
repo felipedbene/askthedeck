@@ -1,9 +1,9 @@
 <script lang="ts">
 	import '../app.css';
-	import { initializeLocale } from '$lib/i18n.js';
+	import { initializeLocale } from '#lib/i18n.js';
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types.js';
-	import * as m from '$lib/paraglide/messages.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
 

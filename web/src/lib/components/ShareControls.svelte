@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import { trackEvent } from '$lib/api/events.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { trackEvent } from '#lib/api/events.js';
 
 	let { readingId }: { readingId: string | null } = $props();
 

@@ -14,7 +14,6 @@
  *   Cache hits still insert a D1 row for this reader so it appears in their
  *   history.
  */
-import type { D1Database, KVNamespace } from '@cloudflare/workers-types';
 import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
 import { cardNameLocalizedFromEnglish } from '../deck/cards.js';
 import { buildPriorReadingsContext } from './continuity.js';

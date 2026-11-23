@@ -1,7 +1,8 @@
+import { env } from 'cloudflare:workers';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
-import { getReadingsListForOwner } from '$lib/server/db.js';
-import { getReaderIdCookie } from '$lib/server/cookies.js';
+import { getReadingsListForOwner } from '#lib/server/db.js';
+import { getReaderIdCookie } from '#lib/server/cookies.js';
 
 const HISTORY_LIMIT = 20;
 
@@ -11,8 +12,8 @@ const HISTORY_LIMIT = 20;
  * preview of each prediction. Frontend history view will consume this
  * later; for now it's curl-testable.
  */
-export const GET: RequestHandler = async ({ platform, cookies }) => {
-	if (!platform?.env.DB) {
+export const GET: RequestHandler = async ({ cookies }) => {
+	if (!env.DB) {
 		throw error(500, 'Reading service is not configured');
 	}
 
@@ -24,7 +25,7 @@ export const GET: RequestHandler = async ({ platform, cookies }) => {
 		return json({ readings: [] });
 	}
 
-	const rows = await getReadingsListForOwner(platform.env.DB, readerId, HISTORY_LIMIT);
+	const rows = await getReadingsListForOwner(env.DB, readerId, HISTORY_LIMIT);
 
 	const readings = rows.map((row) => {
 		let cards: unknown = [];
