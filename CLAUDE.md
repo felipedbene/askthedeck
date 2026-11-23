@@ -48,4 +48,4 @@ CI/CD is Cloudflare **Workers Builds** (git integration, configured in the Cloud
 
 ## Known debt
 
-- 16 npm audit findings remain (cookie, devalue, deepmerge-ts, SvelteKit core); fixes require the SvelteKit 3.x and paraglide 2.x major migrations.
+- 3 npm audit findings remain (SvelteKit core + its bundled cookie); the fix requires the SvelteKit 3.x major migration. The paraglide 2.x migration is done (runtime on @inlang/paraglide-js 2.x).
