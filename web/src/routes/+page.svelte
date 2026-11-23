@@ -9,15 +9,11 @@
 	import ShareControls from '#lib/components/ShareControls.svelte';
 	import { deck } from '#lib/deck/deck.svelte.js';
 	import { reading } from '#lib/deck/reading.svelte.js';
-	import { cardDisplayName } from '#lib/deck/cards.js';
+	import { cardDisplayName, positionLabel, SPREAD_POSITIONS } from '#lib/deck/cards.js';
 	import { getLocale } from '#lib/paraglide/runtime.js';
 	import * as m from '#lib/paraglide/messages.js';
 
-	const POSITION_LABELS = [
-		() => m.position_current(),
-		() => m.position_growth(),
-		() => m.position_potential()
-	];
+	const POSITION_LABELS = SPREAD_POSITIONS.map((key) => () => positionLabel(key, getLocale()));
 
 	function handleRead() {
 		const cards = deck.drawn.map((id, i) => ({

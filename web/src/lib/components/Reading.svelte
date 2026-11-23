@@ -4,6 +4,8 @@
 		cardDisplayNameLocalized,
 		cardImageUrl,
 		cardHighlightWord,
+		positionLabel,
+		SPREAD_POSITIONS,
 		type CardId
 	} from '#lib/deck/cards.js';
 	import { getLocale } from '#lib/paraglide/runtime.js';
@@ -20,11 +22,7 @@
 
 	let { cards = [] }: { cards?: CardId[] } = $props();
 
-	const POSITION_LABELS = [
-		() => m.position_current(),
-		() => m.position_growth(),
-		() => m.position_potential()
-	];
+	const POSITION_LABELS = SPREAD_POSITIONS.map((key) => () => positionLabel(key, getLocale()));
 
 	const PROGRESS_MESSAGES = [
 		() => m.progress_msg_1(),

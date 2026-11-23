@@ -129,7 +129,7 @@ const NUMBER_NAMES: Record<Locale, string[]> = {
 const COURT_NAMES: Record<Locale, Record<number, string>> = {
 	en:      { 11: 'Page',   12: 'Knight',     13: 'Queen', 14: 'King' },
 	'pt-BR': { 11: 'Pajem',  12: 'Cavaleiro',  13: 'Rainha', 14: 'Rei'  },
-	'es-MX': { 11: 'Sota',   12: 'Caballero',  13: 'Reina',  14: 'Rey'  }
+	'es-MX': { 11: 'Paje',   12: 'Caballero',  13: 'Reina',  14: 'Rey'  }
 };
 
 // Connector word for "X of Y": "Seven of Cups", "Sete de Copas", "Siete de Copas"
@@ -229,13 +229,30 @@ export function cardHighlightWord(id: CardId, locale: string): string {
 	return parts[parts.length - 1];
 }
 
-type PositionKey = 'current' | 'growth' | 'potential';
+export type PositionKey = 'current' | 'growth' | 'potential';
+
+/** The three spread positions, in draw order. */
+export const SPREAD_POSITIONS: readonly PositionKey[] = ['current', 'growth', 'potential'];
 
 const POSITION_LABELS: Record<Locale, Record<PositionKey, string>> = {
 	en:      { current: 'Current State',  growth: 'Focus for Growth',  potential: 'Potential in 7 Days' },
-	'pt-BR': { current: 'Estado Atual',   growth: 'Foco para Crescimento', potential: 'Potencial em 7 Dias' },
-	'es-MX': { current: 'Estado Actual',  growth: 'Enfoque para Crecer', potential: 'Potencial en 7 Días' }
+	'pt-BR': { current: 'Estado Atual',   growth: 'Foco de Crescimento', potential: 'Potencial para os Próximos 7 Dias' },
+	'es-MX': { current: 'Estado Actual',  growth: 'Enfoque para Crecer', potential: 'Potencial en los Próximos 7 Días' }
 };
+
+// Labels that older readings stored in D1 cards_json before the canonical
+// wording was fixed. They must stay recognized by positionLabelLocalized
+// forever, or old shared readings stop re-localizing.
+const LEGACY_POSITION_LABELS: Record<string, PositionKey> = {
+	'foco para crescimento': 'growth',
+	'potencial em 7 dias': 'potential',
+	'potencial en 7 días': 'potential'
+};
+
+/** Canonical label for a spread position in the given locale. */
+export function positionLabel(key: PositionKey, locale: string): string {
+	return POSITION_LABELS[normalizeLocale(locale)][key];
+}
 
 let _positionKeyFromLabel: Map<string, PositionKey> | null = null;
 
@@ -252,6 +269,9 @@ export function positionLabelLocalized(label: string, locale: string): string {
 			for (const key of ['current', 'growth', 'potential'] as PositionKey[]) {
 				_positionKeyFromLabel.set(POSITION_LABELS[loc][key].toLowerCase(), key);
 			}
+		}
+		for (const [legacy, key] of Object.entries(LEGACY_POSITION_LABELS)) {
+			_positionKeyFromLabel.set(legacy, key);
 		}
 	}
 	const key = _positionKeyFromLabel.get(label.trim().toLowerCase());
