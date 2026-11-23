@@ -18,7 +18,8 @@ import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
 import {
 	cardNameLocalizedFromEnglish,
 	findOffGlossaryCardTerms,
-	positionLabel
+	positionLabel,
+	SPREAD_POSITIONS
 } from '../deck/cards.js';
 import { buildPriorReadingsContext } from './continuity.js';
 import { getRecentReadingsByOwner, insertReading } from './db.js';
@@ -387,6 +388,17 @@ export async function generateReading(
 ): Promise<void> {
 	const normalizedLocale = locale || 'en';
 	const responseLanguage = LOCALE_NAMES[normalizedLocale] || 'English';
+
+	// Normalize position labels server-side by spread index so the prompt,
+	// the D1 row, and the KV cache key all use the canonical labels for this
+	// locale — regardless of what the client sent (stale cached bundles or
+	// direct API callers may still send old label names). Cards beyond the
+	// three known spread positions keep the client-supplied label.
+	cards = cards.map((c, i) => {
+		const key = SPREAD_POSITIONS[i];
+		return key === undefined ? c : { ...c, position: positionLabel(key, normalizedLocale) };
+	});
+
 	const now = Date.now();
 	const nowDate = new Date(now);
 
