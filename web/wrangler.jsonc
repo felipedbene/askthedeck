@@ -27,5 +27,21 @@
 			"database_name": "tarot",
 			"database_id": "6b81bce2-6df7-44a2-b54d-6420e225d74c"
 		}
-	]
+	],
+	// Isolated resources for PR preview deploys (wrangler preview) — never production data.
+	"previews": {
+		"kv_namespaces": [
+			{
+				"binding": "READINGS_KV",
+				"id": "0ea3cb3531d345218aff354716bc2188"
+			}
+		],
+		"d1_databases": [
+			{
+				"binding": "DB",
+				"database_name": "tarot-preview",
+				"database_id": "ec067ecf-154b-40c3-834b-f6f3c81ea801"
+			}
+		]
+	}
 }
