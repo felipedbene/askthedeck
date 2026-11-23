@@ -1,15 +1,13 @@
 <script lang="ts">
-	import * as m from '#lib/paraglide/messages.js';
-	import { cardImageUrl, type CardId } from '#lib/deck/cards.js';
+	import { cardImageUrl, positionLabel, SPREAD_POSITIONS, type CardId } from '#lib/deck/cards.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
 	import { untrack } from 'svelte';
 
 	let { drawn = [] }: { drawn?: CardId[] } = $props();
 
-	const positions = [
-		{ label: () => m.position_current() },
-		{ label: () => m.position_growth() },
-		{ label: () => m.position_potential() }
-	];
+	const positions = SPREAD_POSITIONS.map((key) => ({
+		label: () => positionLabel(key, getLocale())
+	}));
 
 	const REVEAL_DELAY_MS = 150;
 
