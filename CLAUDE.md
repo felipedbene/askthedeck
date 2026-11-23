@@ -45,6 +45,7 @@ CI/CD is Cloudflare **Workers Builds** (git integration, configured in the Cloud
   - UI display: `cardDisplayNameLocalized(id, locale)`.
   - LLM prompts: localize via `cardNameLocalizedFromEnglish(name, locale)` and instruct the model to use the given names verbatim — never let the LLM translate card names itself (it invents e.g. "Varas" for Wands; pt-BR is **"Paus"**).
 - Locales: `en`, `pt-BR`, `es-MX`. Locale is bound to hostname (see `web/src/app.html`). UI strings live in paraglide messages (`web/project.inlang`).
+- **Tarot/i18n rule (PR gate):** every tarot term (card names, suits, courts, position labels) comes from the glossary in `web/src/lib/deck/cards.ts`; every other user-visible string goes through paraglide messages, and any new message key must exist in **all three** locales. Never hardcode a card name or position label elsewhere. `scripts/check-glossary.mjs` enforces this — it runs in `npm run check` and as `prebuild` (so Workers Builds fails on violations).
 
 ## Known debt
 
