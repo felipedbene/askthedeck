@@ -12,13 +12,17 @@ import { getReaderIdCookie, setReaderIdCookie } from '#lib/server/cookies.js';
 import { upsertReader } from '#lib/server/db.js';
 import { getDefaultLocale } from '#lib/server/locale.js';
 import { logEvent } from '#lib/server/events.js';
+import { cardDisplayName, cardIdFromDisplayName } from '#lib/deck/cards.js';
 
 interface StartRequest {
 	cards: CardSpread[];
 	locale?: string;
 }
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+const VALID_LOCALES = new Set(['en', 'pt-BR', 'es-MX']);
+const MAX_POSITION_LENGTH = 64;
+
+export const POST: RequestHandler = async ({ request, cookies, url }) => {
 	const { READINGS_KV, DB, DEEPSEEK_API_KEY } = env;
 	if (!READINGS_KV || !DB || !DEEPSEEK_API_KEY) {
 		throw error(500, 'Reading service is not configured');
@@ -31,12 +35,30 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		throw error(400, 'Invalid JSON body');
 	}
 
-	if (!Array.isArray(body.cards) || body.cards.length === 0) {
-		throw error(400, 'Request must include a non-empty `cards` array');
+	if (!Array.isArray(body.cards) || body.cards.length !== 3) {
+		throw error(400, 'Request must include exactly 3 cards');
 	}
 
-	const hostLocale = getDefaultLocale(new URL(request.url).hostname);
-	const locale = body.locale || hostLocale;
+	// Canonicalize the spread: card names must be known canonical English
+	// display names (the form stored in D1 cards_json and used as the KV
+	// cache key), and positions must be sane free-text labels. The LLM
+	// prompt and the public /r/:slug page both consume these values.
+	const cards: CardSpread[] = body.cards.map((card) => {
+		if (!card || typeof card.name !== 'string' || typeof card.position !== 'string') {
+			throw error(400, 'Invalid cards');
+		}
+		const id = cardIdFromDisplayName(card.name);
+		const position = card.position.trim();
+		if (!id || position.length === 0 || position.length > MAX_POSITION_LENGTH) {
+			throw error(400, 'Invalid cards');
+		}
+		return { name: cardDisplayName(id), position };
+	});
+
+	const locale =
+		body.locale && VALID_LOCALES.has(body.locale)
+			? body.locale
+			: getDefaultLocale(url.hostname);
 
 	// Identify the reader. Accept a pre-existing cookie value; if no row
 	// exists for it (data wiped, fresh worker, etc.) just upsert under it.
@@ -63,14 +85,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const readingId = generateReadingId();
 	await initJob(READINGS_KV, jobId);
 
-	const url = new URL(request.url);
 	waitUntil(
 		logEvent(DB, {
 			event: 'reading_started',
 			readerId,
 			locale,
 			hostname: url.hostname,
-			metadata: { card_count: body.cards.length }
+			metadata: { card_count: cards.length }
 		})
 	);
 
@@ -79,7 +100,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			jobId,
 			readingId,
 			readerId,
-			body.cards,
+			cards,
 			READINGS_KV,
 			DB,
 			DEEPSEEK_API_KEY,
