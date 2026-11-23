@@ -14,6 +14,11 @@ const cards = await import(pathToFileURL(join(webRoot, 'src/lib/deck/cards.ts'))
 const LOCALES = ['en', 'pt-BR', 'es-MX'];
 const errors = [];
 
+// 0: the deck itself must be complete.
+if (cards.ALL_CARDS.length !== 78) {
+	errors.push(`deck has ${cards.ALL_CARDS.length} cards, expected 78`);
+}
+
 // 1 + 2: completeness and uniqueness of all 78 names per locale.
 for (const locale of LOCALES) {
 	const names = new Map();
@@ -28,8 +33,8 @@ for (const locale of LOCALES) {
 		}
 		names.set(name, id);
 	}
-	if (names.size !== 78 && cards.ALL_CARDS.length === 78) {
-		errors.push(`[${locale}] expected 78 unique card names, got ${names.size}`);
+	if (names.size !== cards.ALL_CARDS.length) {
+		errors.push(`[${locale}] expected ${cards.ALL_CARDS.length} unique card names, got ${names.size}`);
 	}
 	const labels = new Set();
 	for (const key of cards.SPREAD_POSITIONS) {
