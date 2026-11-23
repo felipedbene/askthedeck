@@ -279,6 +279,31 @@ export function positionLabelLocalized(label: string, locale: string): string {
 	return POSITION_LABELS[normalizeLocale(locale)][key];
 }
 
+// Card-name synonyms the LLM must never use, per locale. These are the
+// drifts actually observed or expected from the model's own translations:
+// Valete/Sota for the page, Varas for the wands suit, and cross-locale
+// bleed between pt-BR (Pajem/Paus) and es-MX (Paje/Bastos).
+const FORBIDDEN_CARD_TERMS: Partial<Record<Locale, RegExp>> = {
+	'pt-BR': /\b(Valete|Varas|Sota|Paje|Bastos)\b/giu,
+	'es-MX': /\b(Sota|Valete|Varas|Pajem|Paus)\b/giu
+};
+
+/**
+ * Scan LLM-generated reading text for card-name synonyms that are outside
+ * the glossary for the given locale. Returns the distinct offending terms
+ * (empty array = clean). Used to log a warning — we never rewrite the
+ * model's prose.
+ */
+export function findOffGlossaryCardTerms(text: string, locale: string): string[] {
+	const re = FORBIDDEN_CARD_TERMS[normalizeLocale(locale)];
+	if (!re) return [];
+	const found = new Set<string>();
+	for (const match of text.matchAll(re)) {
+		found.add(match[0]);
+	}
+	return [...found];
+}
+
 export function fisherYatesShuffle<T>(items: readonly T[]): T[] {
 	const arr = [...items];
 	for (let i = arr.length - 1; i > 0; i--) {

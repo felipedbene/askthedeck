@@ -15,7 +15,11 @@
  *   history.
  */
 import { MoonPhase, EclipticGeoMoon, SunPosition } from 'astronomy-engine';
-import { cardNameLocalizedFromEnglish } from '../deck/cards.js';
+import {
+	cardNameLocalizedFromEnglish,
+	findOffGlossaryCardTerms,
+	positionLabel
+} from '../deck/cards.js';
 import { buildPriorReadingsContext } from './continuity.js';
 import { getRecentReadingsByOwner, insertReading } from './db.js';
 import { logEvent } from './events.js';
@@ -194,15 +198,21 @@ function buildPrompt(args: {
 		.map((c) => `${c.position}: ${cardNameLocalizedFromEnglish(c.name, args.locale)}`)
 		.join(', ');
 
+	// Position labels in the seeker's locale, so the prompt prose and THE
+	// CARDS block use ONE name per position (not English + localized).
+	const labelCurrent = positionLabel('current', args.locale);
+	const labelGrowth = positionLabel('growth', args.locale);
+	const labelPotential = positionLabel('potential', args.locale);
+
 	return `You are an experienced tarot reader who speaks plainly and with conviction. The seeker has drawn a three-card spread. Each card sits in a specific position; read each card AS THAT POSITION, not as a generic card meaning.
 
 THE SPREAD POSITIONS
 
-Position 1 — Current State: what is actually happening in the seeker's life right now. The texture of their present moment. Not where they "are coming from", not what they "want" — what *is*.
+Position 1 — ${labelCurrent}: what is actually happening in the seeker's life right now. The texture of their present moment. Not where they "are coming from", not what they "want" — what *is*.
 
-Position 2 — Focus for Growth: where their attention should land in the coming days. The work in front of them. Not a destination — a verb.
+Position 2 — ${labelGrowth}: where their attention should land in the coming days. The work in front of them. Not a destination — a verb.
 
-Position 3 — Potential in 7 Days: a quality of energy that could become available to them within the week, IF they engage with Position 2. Frame this as an atmosphere or invitation, NEVER as a guaranteed outcome or specific event ("you will receive money", "someone will appear").
+Position 3 — ${labelPotential}: a quality of energy that could become available to them within the week, IF they engage with Position 2. Frame this as an atmosphere or invitation, NEVER as a guaranteed outcome or specific event ("you will receive money", "someone will appear").
 
 THE CARDS
 
@@ -228,7 +238,7 @@ Use three subheadings, one per card, in this exact format:
 
 ## {Position label}: {Card name}
 
-Use the position labels and card names EXACTLY as written in THE CARDS above, character for character. Do not translate, rename, or anglicize them, and use those same card names whenever you mention a card in the prose.
+Use the position labels and card names EXACTLY as written in THE CARDS above, character for character. Do not translate, rename, or anglicize them, and use those same card names whenever you mention a card in the prose. Never substitute a synonym or regional variant for a card term — for example, never "Valete" or "Sota" where THE CARDS say "Pajem" or "Paje", and never "Varas" where they say "Paus" or "Bastos".
 
 Then one or two paragraphs of prose for that card. After the third card, add a short closing paragraph (no header) that names the through-line. No bullet lists. No additional headers beyond the three card headers.
 
@@ -461,6 +471,15 @@ export async function generateReading(
 		console.log(`[deepseek] finish_reason=${finishReason}, length=${prediction.length}`);
 		if (finishReason === 'length') {
 			console.warn('[deepseek] response truncated by max_tokens — consider raising the limit');
+		}
+
+		// Glossary guard: warn (never rewrite) when the model used a card-name
+		// synonym outside the canonical glossary for this locale.
+		const offGlossary = findOffGlossaryCardTerms(prediction, normalizedLocale);
+		if (offGlossary.length > 0) {
+			console.warn(
+				`[glossary] off-glossary card terms in ${normalizedLocale} reading: ${offGlossary.join(', ')}`
+			);
 		}
 
 		await kv.put(cacheKey, prediction, { expirationTtl: CACHE_TTL_SECONDS });
