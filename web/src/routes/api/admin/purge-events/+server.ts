@@ -1,3 +1,4 @@
+import { env } from 'cloudflare:workers';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 
@@ -27,11 +28,11 @@ function timingSafeEqual(a: string, b: string): boolean {
 	return diff === 0;
 }
 
-export const POST: RequestHandler = async ({ request, platform }) => {
-	if (!platform?.env.DB) {
+export const POST: RequestHandler = async ({ request }) => {
+	if (!env.DB) {
 		throw error(500, 'DB not configured');
 	}
-	const expected = platform.env.PURGE_SECRET;
+	const expected = env.PURGE_SECRET;
 	if (!expected) {
 		throw error(500, 'PURGE_SECRET not configured');
 	}
@@ -55,7 +56,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	if (olderThanDays > MAX_DAYS) olderThanDays = MAX_DAYS;
 
 	const cutoff = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
-	const result = await platform.env.DB
+	const result = await env.DB
 		.prepare(`DELETE FROM events WHERE created_at < ?`)
 		.bind(cutoff)
 		.run();

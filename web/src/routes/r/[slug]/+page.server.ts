@@ -1,20 +1,21 @@
+import { env, waitUntil } from 'cloudflare:workers';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import { getReadingBySlug } from '$lib/server/db.js';
-import { getReaderIdCookie } from '$lib/server/cookies.js';
-import { logEvent } from '$lib/server/events.js';
+import { getReadingBySlug } from '#lib/server/db.js';
+import { getReaderIdCookie } from '#lib/server/cookies.js';
+import { logEvent } from '#lib/server/events.js';
 
 interface CardJson {
 	position?: string;
 	name?: string;
 }
 
-export const load: PageServerLoad = async ({ params, platform, url, cookies }) => {
-	if (!platform?.env.DB) {
+export const load: PageServerLoad = async ({ params, url, cookies }) => {
+	if (!env.DB) {
 		throw error(500, 'Reading service is not configured');
 	}
 
-	const row = await getReadingBySlug(platform.env.DB, params.slug);
+	const row = await getReadingBySlug(env.DB, params.slug);
 	if (!row) {
 		throw error(404, 'Not found');
 	}
@@ -28,8 +29,8 @@ export const load: PageServerLoad = async ({ params, platform, url, cookies }) =
 	}
 
 	const readerId = getReaderIdCookie(cookies);
-	platform.context.waitUntil(
-		logEvent(platform.env.DB, {
+	waitUntil(
+		logEvent(env.DB, {
 			event: 'reading_viewed',
 			readerId,
 			locale: row.locale,

@@ -13,10 +13,9 @@
 		"paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy cookie globalVariable baseLocale"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^5.20261122.2",
 		"@inlang/paraglide-js": "^2.18.1",
-		"@sveltejs/adapter-cloudflare": "^7.2.10",
-		"@sveltejs/kit": "^2.70.4",
+		"@sveltejs/adapter-cloudflare": "^8.0.0",
+		"@sveltejs/kit": "^3.4.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"autoprefixer": "^10.5.0",
 		"postcss": "^8.5.15",
@@ -24,12 +23,17 @@
 		"svelte-check": "^4.7.8",
 		"tailwindcss": "^3.4.19",
 		"typescript": "^6.0.3",
-		"vite": "^8.3.8"
+		"vite": "^8.3.8",
+		"wrangler": "^4.166.0"
 	},
 	"dependencies": {
 		"astronomy-engine": "^2.1.19"
 	},
 	"engines": {
 		"node": ">=22.17.0"
+	},
+	"imports": {
+		"#lib": "./src/lib/index.js",
+		"#lib/*": "./src/lib/*"
 	}
 }

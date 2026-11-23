@@ -1,13 +1,14 @@
+import { env, waitUntil } from 'cloudflare:workers';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 import {
 	getReadingById,
 	tryPublishReading,
 	unpublishReading
-} from '$lib/server/db.js';
-import { getReaderIdCookie } from '$lib/server/cookies.js';
-import { generateShareSlug } from '$lib/server/ids.js';
-import { logEvent } from '$lib/server/events.js';
+} from '#lib/server/db.js';
+import { getReaderIdCookie } from '#lib/server/cookies.js';
+import { generateShareSlug } from '#lib/server/ids.js';
+import { logEvent } from '#lib/server/events.js';
 
 interface ShareRequest {
 	action: 'publish' | 'unpublish';
@@ -27,8 +28,8 @@ const MAX_PUBLISH_ATTEMPTS = 6;
  * 404 is used for both "no such reading" and "not your reading" — same
  * leak-avoidance as GET /api/reading/:id.
  */
-export const POST: RequestHandler = async ({ params, request, platform, cookies, url }) => {
-	if (!platform?.env.DB) {
+export const POST: RequestHandler = async ({ params, request, cookies, url }) => {
+	if (!env.DB) {
 		throw error(500, 'Reading service is not configured');
 	}
 
@@ -47,13 +48,13 @@ export const POST: RequestHandler = async ({ params, request, platform, cookies,
 		throw error(400, 'action must be "publish" or "unpublish"');
 	}
 
-	const row = await getReadingById(platform.env.DB, params.readingId);
+	const row = await getReadingById(env.DB, params.readingId);
 	if (!row || row.owner_id !== readerId) {
 		throw error(404, 'Not found');
 	}
 
 	if (body.action === 'unpublish') {
-		await unpublishReading(platform.env.DB, params.readingId, readerId);
+		await unpublishReading(env.DB, params.readingId, readerId);
 		return json({ shareUrl: null });
 	}
 
@@ -65,14 +66,14 @@ export const POST: RequestHandler = async ({ params, request, platform, cookies,
 	for (let attempt = 0; attempt < MAX_PUBLISH_ATTEMPTS; attempt++) {
 		const slug = generateShareSlug();
 		const { changed } = await tryPublishReading(
-			platform.env.DB,
+			env.DB,
 			params.readingId,
 			readerId,
 			slug
 		);
 		if (changed) {
-			platform.context.waitUntil(
-				logEvent(platform.env.DB, {
+			waitUntil(
+				logEvent(env.DB, {
 					event: 'share_published',
 					readerId,
 					locale: row.locale,

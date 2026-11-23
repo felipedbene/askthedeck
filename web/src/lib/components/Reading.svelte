@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { reading } from '$lib/deck/reading.svelte.js';
+	import { reading } from '#lib/deck/reading.svelte.js';
 	import {
 		cardDisplayNameLocalized,
 		cardImageUrl,
 		cardHighlightWord,
 		type CardId
-	} from '$lib/deck/cards.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import * as m from '$lib/paraglide/messages.js';
-	import { trackEvent } from '$lib/api/events.js';
-	import TarotCard from '$lib/components/TarotCard.svelte';
-	import ReadingPanel from '$lib/components/ReadingPanel.svelte';
+	} from '#lib/deck/cards.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { trackEvent } from '#lib/api/events.js';
+	import TarotCard from '#lib/components/TarotCard.svelte';
+	import ReadingPanel from '#lib/components/ReadingPanel.svelte';
 
 	const REVEAL_DELAYS = [0.1, 0.25, 0.4];
 

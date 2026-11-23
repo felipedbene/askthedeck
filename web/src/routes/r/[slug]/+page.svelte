@@ -5,12 +5,12 @@
 		cardDisplayNameLocalized,
 		cardHighlightWord,
 		positionLabelLocalized
-	} from '$lib/deck/cards.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import * as m from '$lib/paraglide/messages.js';
-	import { trackEvent } from '$lib/api/events.js';
-	import TarotCard from '$lib/components/TarotCard.svelte';
-	import ReadingPanel from '$lib/components/ReadingPanel.svelte';
+	} from '#lib/deck/cards.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { trackEvent } from '#lib/api/events.js';
+	import TarotCard from '#lib/components/TarotCard.svelte';
+	import ReadingPanel from '#lib/components/ReadingPanel.svelte';
 	import type { PageData } from './$types.js';
 
 	const REVEAL_DELAYS = [0.1, 0.25, 0.4];

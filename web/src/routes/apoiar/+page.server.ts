@@ -1,7 +1,8 @@
+import { env, waitUntil } from 'cloudflare:workers';
 import type { PageServerLoad } from './$types.js';
-import { getReaderIdCookie } from '$lib/server/cookies.js';
-import { getDefaultLocale } from '$lib/server/locale.js';
-import { logEvent } from '$lib/server/events.js';
+import { getReaderIdCookie } from '#lib/server/cookies.js';
+import { getDefaultLocale } from '#lib/server/locale.js';
+import { logEvent } from '#lib/server/events.js';
 
 /**
  * /apoiar is a static content page. We use a server load only to log
@@ -9,12 +10,12 @@ import { logEvent } from '$lib/server/events.js';
  * not on every client-side re-hydration. The waitUntil ensures the
  * insert doesn't add latency to the page response.
  */
-export const load: PageServerLoad = async ({ platform, url, cookies }) => {
-	if (platform?.env.DB) {
+export const load: PageServerLoad = async ({ url, cookies }) => {
+	if (env.DB) {
 		const readerId = getReaderIdCookie(cookies);
 		const locale = getDefaultLocale(url.hostname);
-		platform.context.waitUntil(
-			logEvent(platform.env.DB, {
+		waitUntil(
+			logEvent(env.DB, {
 				event: 'apoiar_page_viewed',
 				readerId,
 				locale,

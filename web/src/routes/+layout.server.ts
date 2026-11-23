@@ -3,7 +3,7 @@
  * Detects locale from request headers
  */
 
-import { detectLocaleFromHeader } from '$lib/i18n.js';
+import { detectLocaleFromHeader } from '#lib/i18n.js';
 import type { LayoutServerLoad } from './$types.js';
 
 export const load: LayoutServerLoad = ({ request, url }) => {

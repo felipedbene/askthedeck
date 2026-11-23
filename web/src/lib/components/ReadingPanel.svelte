@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { renderMarkdown } from '$lib/markdown.js';
+	import { renderMarkdown } from '#lib/markdown.js';
 
 	let { prediction }: { prediction: string } = $props();
 

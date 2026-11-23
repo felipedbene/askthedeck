@@ -1,17 +1,17 @@
 <script lang="ts">
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
-	import StackedDeck from '$lib/components/StackedDeck.svelte';
-	import ShuffleButton from '$lib/components/ShuffleButton.svelte';
-	import CardSlots from '$lib/components/CardSlots.svelte';
-	import ReadButton from '$lib/components/ReadButton.svelte';
-	import Reading from '$lib/components/Reading.svelte';
-	import NewReadingButton from '$lib/components/NewReadingButton.svelte';
-	import ShareControls from '$lib/components/ShareControls.svelte';
-	import { deck } from '$lib/deck/deck.svelte.js';
-	import { reading } from '$lib/deck/reading.svelte.js';
-	import { cardDisplayName } from '$lib/deck/cards.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import * as m from '$lib/paraglide/messages.js';
+	import LocaleSwitcher from '#lib/components/LocaleSwitcher.svelte';
+	import StackedDeck from '#lib/components/StackedDeck.svelte';
+	import ShuffleButton from '#lib/components/ShuffleButton.svelte';
+	import CardSlots from '#lib/components/CardSlots.svelte';
+	import ReadButton from '#lib/components/ReadButton.svelte';
+	import Reading from '#lib/components/Reading.svelte';
+	import NewReadingButton from '#lib/components/NewReadingButton.svelte';
+	import ShareControls from '#lib/components/ShareControls.svelte';
+	import { deck } from '#lib/deck/deck.svelte.js';
+	import { reading } from '#lib/deck/reading.svelte.js';
+	import { cardDisplayName } from '#lib/deck/cards.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	const POSITION_LABELS = [
 		() => m.position_current(),

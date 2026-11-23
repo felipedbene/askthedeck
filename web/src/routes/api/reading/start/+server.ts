@@ -1,3 +1,4 @@
+import { env, waitUntil } from 'cloudflare:workers';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
 import {
@@ -5,23 +6,20 @@ import {
 	generateReading,
 	initJob,
 	type CardSpread
-} from '$lib/server/reading.js';
-import { generateReaderId, generateReadingId } from '$lib/server/ids.js';
-import { getReaderIdCookie, setReaderIdCookie } from '$lib/server/cookies.js';
-import { upsertReader } from '$lib/server/db.js';
-import { getDefaultLocale } from '$lib/server/locale.js';
-import { logEvent } from '$lib/server/events.js';
+} from '#lib/server/reading.js';
+import { generateReaderId, generateReadingId } from '#lib/server/ids.js';
+import { getReaderIdCookie, setReaderIdCookie } from '#lib/server/cookies.js';
+import { upsertReader } from '#lib/server/db.js';
+import { getDefaultLocale } from '#lib/server/locale.js';
+import { logEvent } from '#lib/server/events.js';
 
 interface StartRequest {
 	cards: CardSpread[];
 	locale?: string;
 }
 
-export const POST: RequestHandler = async ({ request, platform, cookies }) => {
-	if (!platform) {
-		throw error(500, 'Platform bindings unavailable');
-	}
-	const { READINGS_KV, DB, DEEPSEEK_API_KEY } = platform.env;
+export const POST: RequestHandler = async ({ request, cookies }) => {
+	const { READINGS_KV, DB, DEEPSEEK_API_KEY } = env;
 	if (!READINGS_KV || !DB || !DEEPSEEK_API_KEY) {
 		throw error(500, 'Reading service is not configured');
 	}
@@ -66,7 +64,7 @@ export const POST: RequestHandler = async ({ request, platform, cookies }) => {
 	await initJob(READINGS_KV, jobId);
 
 	const url = new URL(request.url);
-	platform.context.waitUntil(
+	waitUntil(
 		logEvent(DB, {
 			event: 'reading_started',
 			readerId,
@@ -76,7 +74,7 @@ export const POST: RequestHandler = async ({ request, platform, cookies }) => {
 		})
 	);
 
-	platform.context.waitUntil(
+	waitUntil(
 		generateReading(
 			jobId,
 			readingId,

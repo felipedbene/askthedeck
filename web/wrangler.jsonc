@@ -3,6 +3,8 @@
 	"name": "ask-the-deck-web",
 	"main": "build/_worker.js",
 	"compatibility_date": "2025-11-28",
+	// SvelteKit 3's server runtime imports node:async_hooks (AsyncLocalStorage).
+	"compatibility_flags": ["nodejs_compat"],
 	"routes": [
 		{ "pattern": "ask.debene.dev", "custom_domain": true },
 		{ "pattern": "pergunte.debene.dev", "custom_domain": true },

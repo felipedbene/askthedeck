@@ -1,8 +1,9 @@
+import { env, waitUntil } from 'cloudflare:workers';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types.js';
-import { getReadingById } from '$lib/server/db.js';
-import { getReaderIdCookie } from '$lib/server/cookies.js';
-import { logEvent } from '$lib/server/events.js';
+import { getReadingById } from '#lib/server/db.js';
+import { getReaderIdCookie } from '#lib/server/cookies.js';
+import { logEvent } from '#lib/server/events.js';
 
 /**
  * GET /api/reading/:readingId
@@ -15,13 +16,13 @@ import { logEvent } from '$lib/server/events.js';
  * we return 404 — never 403. We don't want to leak that an id exists
  * but belongs to someone else.
  */
-export const GET: RequestHandler = async ({ params, platform, cookies, request }) => {
-	if (!platform?.env.DB) {
+export const GET: RequestHandler = async ({ params, cookies, request }) => {
+	if (!env.DB) {
 		throw error(500, 'Reading service is not configured');
 	}
 
 	const readerId = getReaderIdCookie(cookies);
-	const row = await getReadingById(platform.env.DB, params.readingId);
+	const row = await getReadingById(env.DB, params.readingId);
 
 	const isOwner = !!row && !!readerId && row.owner_id === readerId;
 	const isPublic = !!row && row.visibility === 'public';
@@ -37,8 +38,8 @@ export const GET: RequestHandler = async ({ params, platform, cookies, request }
 	}
 
 	const hostname = new URL(request.url).hostname;
-	platform.context.waitUntil(
-		logEvent(platform.env.DB, {
+	waitUntil(
+		logEvent(env.DB, {
 			event: 'reading_viewed',
 			readerId,
 			locale: row.locale,

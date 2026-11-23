@@ -1,4 +1,4 @@
-import type { CardId } from '$lib/deck/cards.js';
+import type { CardId } from '#lib/deck/cards.js';
 
 export type ReadingStatus = 'pending' | 'processing' | 'completed' | 'error';
 

@@ -1,10 +1,3 @@
-import type {
-	KVNamespace,
-	Fetcher,
-	ExecutionContext,
-	D1Database
-} from '@cloudflare/workers-types';
-
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
@@ -13,16 +6,14 @@ declare global {
 		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
-		interface Platform {
-			env: {
-				ASSETS: Fetcher;
-				READINGS_KV: KVNamespace;
-				DB: D1Database;
-				DEEPSEEK_API_KEY: string;
-				PURGE_SECRET?: string;
-			};
-			context: ExecutionContext;
-			caches: CacheStorage & { default: Cache };
+	}
+
+	// Bindings are typed by the generated worker-configuration.d.ts (wrangler types);
+	// secrets are not in wrangler.jsonc, so they are declared here.
+	namespace Cloudflare {
+		interface Env {
+			DEEPSEEK_API_KEY: string;
+			PURGE_SECRET?: string;
 		}
 	}
 }
