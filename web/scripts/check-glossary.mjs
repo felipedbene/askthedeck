@@ -6,10 +6,10 @@
 // Runs under plain `node` (Node >=22 strips TS types natively).
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const webRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const cards = await import(join(webRoot, 'src/lib/deck/cards.ts'));
+const cards = await import(pathToFileURL(join(webRoot, 'src/lib/deck/cards.ts')).href);
 
 const LOCALES = ['en', 'pt-BR', 'es-MX'];
 const errors = [];
