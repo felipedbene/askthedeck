@@ -126,6 +126,13 @@ const NUMBER_NAMES: Record<Locale, string[]> = {
 	'es-MX': ['As', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho', 'Nueve', 'Diez']
 };
 
+// November 2026: the es-MX page card was renamed 'Sota' → 'Paje'. Readings
+// generated before the rename contain 'Sota' in their stored prose (D1
+// predictions, and KV cache entries for up to 24h) forever — that is
+// expected and harmless. Card tiles/headers re-localize to 'Paje' because
+// storage uses canonical English names, so only the prose keeps the old
+// term. findOffGlossaryCardTerms only runs on FRESH model output, so it
+// never warns about that old content.
 const COURT_NAMES: Record<Locale, Record<number, string>> = {
 	en:      { 11: 'Page',   12: 'Knight',     13: 'Queen', 14: 'King' },
 	'pt-BR': { 11: 'Pajem',  12: 'Cavaleiro',  13: 'Rainha', 14: 'Rei'  },
