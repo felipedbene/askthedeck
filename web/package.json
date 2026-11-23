@@ -10,7 +10,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide"
+		"paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy cookie globalVariable baseLocale"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^5.20261122.2",
